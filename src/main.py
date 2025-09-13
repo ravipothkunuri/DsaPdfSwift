@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-DSA Problems PDF Generator
-Creates a comprehensive PDF containing Data Structures and Algorithms problems
-with Swift solutions, explanations, and complexity analysis.
+Comprehensive Swift Programming Guide PDF Generator
+Creates an extensive PDF covering Swift fundamentals, advanced topics, SwiftUI, 
+Combine, networking, iOS development, and data structures & algorithms.
 """
 
 from reportlab.lib.pagesizes import letter, A4
@@ -15,33 +15,47 @@ import io
 import re
 from datetime import datetime
 
-class DSAProblemsPDFGenerator:
+class SwiftProgrammingGuidePDFGenerator:
     def __init__(self):
-        self.doc = SimpleDocTemplate("DSA_Problems_Swift_Solutions.pdf", pagesize=A4)
+        self.doc = SimpleDocTemplate("Comprehensive_Swift_Programming_Guide.pdf", pagesize=A4)
         self.styles = getSampleStyleSheet()
         self.story = []
         self.setup_custom_styles()
         
     def setup_custom_styles(self):
         """Set up custom styles for the PDF."""
-        # Title style
-        self.title_style = ParagraphStyle(
-            'CustomTitle',
+        # Main title style
+        self.main_title_style = ParagraphStyle(
+            'MainTitle',
             parent=self.styles['Heading1'],
-            fontSize=24,
+            fontSize=28,
             spaceAfter=30,
             alignment=TA_CENTER,
-            textColor=colors.darkblue
+            textColor=colors.darkblue,
+            fontName='Helvetica-Bold'
         )
         
-        # Problem title style
-        self.problem_title_style = ParagraphStyle(
-            'ProblemTitle',
+        # Chapter title style
+        self.chapter_title_style = ParagraphStyle(
+            'ChapterTitle',
+            parent=self.styles['Heading1'],
+            fontSize=20,
+            spaceAfter=20,
+            spaceBefore=30,
+            alignment=TA_CENTER,
+            textColor=colors.darkgreen,
+            fontName='Helvetica-Bold'
+        )
+        
+        # Topic title style
+        self.topic_title_style = ParagraphStyle(
+            'TopicTitle',
             parent=self.styles['Heading2'],
             fontSize=16,
             spaceAfter=12,
             spaceBefore=20,
-            textColor=colors.darkgreen
+            textColor=colors.darkred,
+            fontName='Helvetica-Bold'
         )
         
         # Section header style
@@ -51,117 +65,12 @@ class DSAProblemsPDFGenerator:
             fontSize=14,
             spaceAfter=8,
             spaceBefore=12,
-            textColor=colors.darkred
+            textColor=colors.purple,
+            fontName='Helvetica-Bold'
         )
         
         # Code style for Preformatted text
-        self.code_style = self.create_code_style()
-        
-        # Complexity style
-        self.complexity_style = ParagraphStyle(
-            'ComplexityStyle',
-            parent=self.styles['Normal'],
-            fontSize=11,
-            textColor=colors.blue,
-            fontName='Helvetica-Bold'
-        )
-
-    def add_title_page(self):
-        """Add the title page to the PDF."""
-        self.story.append(Spacer(1, 2*inch))
-        
-        title = Paragraph("Data Structures & Algorithms<br/>Problems and Solutions", self.title_style)
-        self.story.append(title)
-        self.story.append(Spacer(1, 0.5*inch))
-        
-        subtitle = Paragraph("Complete Swift Implementation Guide", self.styles['Heading2'])
-        self.story.append(subtitle)
-        self.story.append(Spacer(1, 0.3*inch))
-        
-        date_text = f"Generated on: {datetime.now().strftime('%B %d, %Y')}"
-        date_para = Paragraph(date_text, self.styles['Normal'])
-        self.story.append(date_para)
-        
-        self.story.append(PageBreak())
-
-    def add_table_of_contents(self):
-        """Add table of contents."""
-        toc_title = Paragraph("Table of Contents", self.problem_title_style)
-        self.story.append(toc_title)
-        
-        toc_data = [
-            ["1. Array Problems", "Page 3"],
-            ["   • Two Sum", ""],
-            ["   • Maximum Subarray", ""],
-            ["   • Merge Sorted Arrays", ""],
-            ["2. Linked List Problems", "Page 8"],
-            ["   • Reverse Linked List", ""],
-            ["   • Merge Two Sorted Lists", ""],
-            ["   • Detect Cycle", ""],
-            ["3. Tree Problems", "Page 13"],
-            ["   • Binary Tree Traversal", ""],
-            ["   • Maximum Depth", ""],
-            ["   • Validate BST", ""],
-            ["4. Graph Problems", "Page 18"],
-            ["   • Breadth-First Search", ""],
-            ["   • Depth-First Search", ""],
-            ["   • Shortest Path", ""],
-        ]
-        
-        toc_table = Table(toc_data, colWidths=[4*inch, 1*inch])
-        toc_table.setStyle(TableStyle([
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 11),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 6),
-        ]))
-        
-        self.story.append(toc_table)
-        self.story.append(PageBreak())
-
-    def add_problem(self, category, title, description, swift_solution, time_complexity, space_complexity, explanation=""):
-        """Add a problem with its Swift solution to the PDF."""
-        # Problem title
-        problem_header = Paragraph(f"{category}: {title}", self.problem_title_style)
-        self.story.append(problem_header)
-        
-        # Problem description
-        desc_header = Paragraph("Problem Description:", self.section_style)
-        self.story.append(desc_header)
-        desc_para = Paragraph(description, self.styles['Normal'])
-        self.story.append(desc_para)
-        self.story.append(Spacer(1, 12))
-        
-        # Swift solution
-        solution_header = Paragraph("Swift Solution:", self.section_style)
-        self.story.append(solution_header)
-        
-        # Use Preformatted for proper code display
-        code_block = Preformatted(swift_solution, self.code_style)
-        self.story.append(code_block)
-        
-        # Explanation
-        if explanation:
-            exp_header = Paragraph("Explanation:", self.section_style)
-            self.story.append(exp_header)
-            exp_para = Paragraph(explanation, self.styles['Normal'])
-            self.story.append(exp_para)
-            self.story.append(Spacer(1, 12))
-        
-        # Complexity analysis
-        complexity_header = Paragraph("Complexity Analysis:", self.section_style)
-        self.story.append(complexity_header)
-        
-        time_para = Paragraph(f"<b>Time Complexity:</b> {time_complexity}", self.complexity_style)
-        space_para = Paragraph(f"<b>Space Complexity:</b> {space_complexity}", self.complexity_style)
-        self.story.append(time_para)
-        self.story.append(space_para)
-        
-        self.story.append(Spacer(1, 20))
-
-    def create_code_style(self):
-        """Create a proper code style for Preformatted text."""
-        return ParagraphStyle(
+        self.code_style = ParagraphStyle(
             'CodePreformatted',
             fontName='Courier',
             fontSize=9,
@@ -174,17 +83,2214 @@ class DSAProblemsPDFGenerator:
             spaceBefore=6,
             leading=12
         )
+        
+        # Note style
+        self.note_style = ParagraphStyle(
+            'NoteStyle',
+            parent=self.styles['Normal'],
+            fontSize=11,
+            textColor=colors.blue,
+            fontName='Helvetica-Oblique',
+            leftIndent=20,
+            spaceAfter=8
+        )
+        
+        # Key point style
+        self.key_point_style = ParagraphStyle(
+            'KeyPointStyle',
+            parent=self.styles['Normal'],
+            fontSize=11,
+            textColor=colors.darkred,
+            fontName='Helvetica-Bold'
+        )
 
-    def generate_problems(self):
-        """Generate all DSA problems with Swift solutions."""
+    def add_title_page(self):
+        """Add the title page to the PDF."""
+        self.story.append(Spacer(1, 2*inch))
         
-        # Array Problems
-        category_header = Paragraph("Array Problems", self.title_style)
-        self.story.append(category_header)
+        title = Paragraph("Comprehensive Swift<br/>Programming Guide", self.main_title_style)
+        self.story.append(title)
+        self.story.append(Spacer(1, 0.5*inch))
+        
+        subtitle = Paragraph("Swift Language • SwiftUI • Combine • Networking<br/>iOS Development • Data Structures & Algorithms", self.styles['Heading3'])
+        self.story.append(subtitle)
+        self.story.append(Spacer(1, 0.5*inch))
+        
+        description = Paragraph("A complete guide with 120+ topics, code examples, and practical implementations", self.styles['Normal'])
+        self.story.append(description)
+        self.story.append(Spacer(1, 0.3*inch))
+        
+        date_text = f"Generated on: {datetime.now().strftime('%B %d, %Y')}"
+        date_para = Paragraph(date_text, self.styles['Normal'])
+        self.story.append(date_para)
+        
+        self.story.append(PageBreak())
+
+    def add_comprehensive_table_of_contents(self):
+        """Add comprehensive table of contents."""
+        toc_title = Paragraph("Table of Contents", self.chapter_title_style)
+        self.story.append(toc_title)
+        
+        toc_data = [
+            ["PART I: SWIFT LANGUAGE FUNDAMENTALS", ""],
+            ["Chapter 1: Swift Basics", ""],
+            ["   1.1 Variables and Constants", ""],
+            ["   1.2 Data Types", ""],
+            ["   1.3 Optionals", ""],
+            ["   1.4 Control Flow", ""],
+            ["   1.5 Functions", ""],
+            ["   1.6 Closures", ""],
+            ["   1.7 Collections", ""],
+            ["   1.8 Strings", ""],
+            ["   1.9 Error Handling", ""],
+            ["", ""],
+            
+            ["Chapter 2: Object-Oriented Programming", ""],
+            ["   2.1 Classes vs Structures", ""],
+            ["   2.2 Properties", ""],
+            ["   2.3 Inheritance", ""],
+            ["   2.4 Initialization", ""],
+            ["   2.5 Protocols", ""],
+            ["   2.6 Extensions", ""],
+            ["", ""],
+            
+            ["Chapter 3: Advanced Swift", ""],
+            ["   3.1 Generics", ""],
+            ["   3.2 Memory Management", ""],
+            ["   3.3 Protocol-Oriented Programming", ""],
+            ["   3.4 Property Wrappers", ""],
+            ["   3.5 Result Builders", ""],
+            ["", ""],
+            
+            ["PART II: CONCURRENCY & MODERN SWIFT", ""],
+            ["Chapter 4: Concurrency", ""],
+            ["   4.1 Async/Await", ""],
+            ["   4.2 Tasks", ""],
+            ["   4.3 Actors", ""],
+            ["   4.4 Structured Concurrency", ""],
+            ["", ""],
+            
+            ["PART III: SwiftUI FRAMEWORK", ""],
+            ["Chapter 5: SwiftUI Fundamentals", ""],
+            ["   5.1 Views and Modifiers", ""],
+            ["   5.2 Layout System", ""],
+            ["   5.3 State Management", ""],
+            ["   5.4 Navigation", ""],
+            ["   5.5 Lists and Forms", ""],
+            ["", ""],
+            
+            ["Chapter 6: Advanced SwiftUI", ""],
+            ["   6.1 Custom Views", ""],
+            ["   6.2 Animations", ""],
+            ["   6.3 Gestures", ""],
+            ["   6.4 MVVM Pattern", ""],
+            ["", ""],
+            
+            ["PART IV: REACTIVE PROGRAMMING", ""],
+            ["Chapter 7: Combine Framework", ""],
+            ["   7.1 Publishers and Subscribers", ""],
+            ["   7.2 Operators", ""],
+            ["   7.3 Subjects", ""],
+            ["   7.4 Schedulers", ""],
+            ["", ""],
+            
+            ["PART V: NETWORKING & APIs", ""],
+            ["Chapter 8: Networking", ""],
+            ["   8.1 URLSession", ""],
+            ["   8.2 JSON & Codable", ""],
+            ["   8.3 REST APIs", ""],
+            ["   8.4 Authentication", ""],
+            ["   8.5 WebSockets", ""],
+            ["", ""],
+            
+            ["PART VI: iOS DEVELOPMENT", ""],
+            ["Chapter 9: Data Persistence", ""],
+            ["   9.1 UserDefaults", ""],
+            ["   9.2 Core Data", ""],
+            ["   9.3 File System", ""],
+            ["   9.4 Keychain", ""],
+            ["", ""],
+            
+            ["Chapter 10: Testing & Architecture", ""],
+            ["   10.1 Unit Testing", ""],
+            ["   10.2 UI Testing", ""],
+            ["   10.3 MVVM Architecture", ""],
+            ["   10.4 Dependency Injection", ""],
+            ["", ""],
+            
+            ["APPENDIX: DATA STRUCTURES & ALGORITHMS", ""],
+            ["   A.1 Array Problems", ""],
+            ["   A.2 Linked List Problems", ""],
+            ["   A.3 Tree Problems", ""],
+            ["   A.4 Graph Problems", ""],
+        ]
+        
+        toc_table = Table(toc_data, colWidths=[4.5*inch, 0.5*inch])
+        toc_table.setStyle(TableStyle([
+            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
+            ('FONTNAME', (0, 0), (0, 0), 'Helvetica-Bold'),  # Part titles
+            ('FONTNAME', (0, 12), (0, 12), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 21), (0, 21), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 28), (0, 28), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 36), (0, 36), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 46), (0, 46), 'Helvetica-Bold'),
+            ('FONTNAME', (0, 56), (0, 56), 'Helvetica-Bold'),
+        ]))
+        
+        self.story.append(toc_table)
+        self.story.append(PageBreak())
+
+    def add_topic(self, title, description, code_example, key_points=None, notes=None):
+        """Add a topic with code example to the PDF."""
+        # Topic title
+        topic_header = Paragraph(title, self.topic_title_style)
+        self.story.append(topic_header)
+        
+        # Description
+        if description:
+            desc_para = Paragraph(description, self.styles['Normal'])
+            self.story.append(desc_para)
+            self.story.append(Spacer(1, 8))
+        
+        # Code example
+        if code_example:
+            code_header = Paragraph("Code Example:", self.section_style)
+            self.story.append(code_header)
+            code_block = Preformatted(code_example, self.code_style)
+            self.story.append(code_block)
+        
+        # Key points
+        if key_points:
+            points_header = Paragraph("Key Points:", self.section_style)
+            self.story.append(points_header)
+            if isinstance(key_points, list):
+                for point in key_points:
+                    point_para = Paragraph(f"• {point}", self.key_point_style)
+                    self.story.append(point_para)
+            else:
+                point_para = Paragraph(key_points, self.key_point_style)
+                self.story.append(point_para)
+            self.story.append(Spacer(1, 8))
+        
+        # Notes
+        if notes:
+            note_header = Paragraph("Notes:", self.section_style)
+            self.story.append(note_header)
+            note_para = Paragraph(notes, self.note_style)
+            self.story.append(note_para)
+        
+        self.story.append(Spacer(1, 15))
+
+    def add_chapter_title(self, title):
+        """Add a chapter title."""
+        self.story.append(PageBreak())
+        chapter_title = Paragraph(title, self.chapter_title_style)
+        self.story.append(chapter_title)
         self.story.append(Spacer(1, 20))
+
+    def generate_swift_basics_content(self):
+        """Generate Swift basics content - Part I."""
         
-        # Two Sum Problem
-        two_sum_code = '''func twoSum(_ nums: [Int], _ target: Int) -> [Int] {
+        self.add_chapter_title("PART I: SWIFT LANGUAGE FUNDAMENTALS")
+        
+        # Chapter 1: Swift Basics
+        self.add_chapter_title("Chapter 1: Swift Basics")
+        
+        # 1.1 Variables and Constants
+        self.add_topic(
+            "1.1 Variables and Constants",
+            "Swift uses 'var' for mutable variables and 'let' for immutable constants. Type inference allows Swift to automatically determine types.",
+            '''// Variables (mutable)
+var playerName = "Alice"
+var score = 100
+var isActive = true
+
+// Constants (immutable)
+let maxPlayers = 4
+let gameTitle = "Swift Adventure"
+let pi = 3.14159
+
+// Explicit type annotations
+var temperature: Double = 98.6
+let items: [String] = ["sword", "shield", "potion"]
+
+// Multiple declarations
+var x = 0.0, y = 0.0, z = 0.0
+let red, green, blue: Double''',
+            ["Use 'let' by default, 'var' only when you need to change the value",
+             "Type inference reduces verbosity while maintaining type safety",
+             "Constants improve performance and prevent accidental mutations"],
+            "Swift encourages immutability through 'let'. The compiler optimizes constants more effectively than variables."
+        )
+        
+        # 1.2 Data Types
+        self.add_topic(
+            "1.2 Data Types",
+            "Swift provides various built-in data types including integers, floating-point numbers, booleans, strings, and more.",
+            '''// Integer types
+let smallNumber: Int8 = 127
+let regularNumber: Int = 42
+let bigNumber: Int64 = 9223372036854775807
+
+// Floating-point types
+let pi: Float = 3.14159
+let precisePi: Double = 3.141592653589793
+
+// Boolean
+let isSwiftFun: Bool = true
+
+// Character and String
+let letter: Character = "A"
+let greeting: String = "Hello, Swift!"
+
+// Type conversion
+let integerValue = 42
+let floatValue = Float(integerValue)
+let stringValue = String(integerValue)
+
+// Type checking
+if floatValue is Float {
+    print("It's a Float!")
+}''',
+            ["Int and Double are the most commonly used numeric types",
+             "Swift doesn't perform implicit type conversions",
+             "Use type conversion initializers for explicit conversions",
+             "Type checking with 'is' operator helps ensure type safety"],
+            "Swift is a type-safe language, preventing type-related errors at compile time."
+        )
+        
+        # 1.3 Optionals
+        self.add_topic(
+            "1.3 Optionals",
+            "Optionals represent either a value or nil (absence of value). They're fundamental to Swift's safety model.",
+            '''// Declaring optionals
+var optionalString: String? = "Hello"
+var optionalInt: Int? = nil
+
+// Optional binding with if-let
+if let actualString = optionalString {
+    print("The string is: \\(actualString)")
+} else {
+    print("No string value")
+}
+
+// Guard statement
+func processString(_ str: String?) {
+    guard let unwrapped = str else {
+        print("String is nil")
+        return
+    }
+    print("Processing: \\(unwrapped)")
+}
+
+// Nil-coalescing operator
+let defaultName = "Anonymous"
+let userName = optionalString ?? defaultName
+
+// Optional chaining
+class Person {
+    var residence: Residence?
+}
+class Residence {
+    var address: String?
+}
+
+let person = Person()
+let address = person.residence?.address
+
+// Implicitly unwrapped optionals
+var assumedString: String! = "An implicitly unwrapped optional string."''',
+            ["Use optionals to handle absence of values safely",
+             "Prefer optional binding over force unwrapping",
+             "Guard statements provide early exit for nil values",
+             "Optional chaining prevents crashes when accessing nested optionals"],
+            "Optionals eliminate null pointer exceptions and make your code more robust."
+        )
+        
+        # 1.4 Control Flow
+        self.add_topic(
+            "1.4 Control Flow",
+            "Swift provides various control flow statements including if, switch, loops, and control transfer statements.",
+            '''// If statements
+let temperature = 75
+if temperature > 80 {
+    print("It's hot!")
+} else if temperature > 60 {
+    print("It's warm")
+} else {
+    print("It's cool")
+}
+
+// Switch statements (powerful in Swift)
+let character = "a"
+switch character {
+case "a", "e", "i", "o", "u":
+    print("It's a vowel")
+case "b"..."z":
+    print("It's a consonant")
+default:
+    print("Not a letter")
+}
+
+// Switch with ranges and where clauses
+let point = (2, 3)
+switch point {
+case (0, 0):
+    print("Origin")
+case (_, 0):
+    print("On x-axis")
+case (0, _):
+    print("On y-axis")
+case let (x, y) where x == y:
+    print("On diagonal")
+case let (x, y):
+    print("Point at (\\(x), \\(y))")
+}
+
+// For loops
+for i in 1...5 {
+    print("Count: \\(i)")
+}
+
+let names = ["Anna", "Alex", "Brian", "Jack"]
+for name in names {
+    print("Hello, \\(name)!")
+}
+
+// While loops
+var counter = 0
+while counter < 3 {
+    print(counter)
+    counter += 1
+}
+
+// Repeat-while (do-while equivalent)
+repeat {
+    print("This executes at least once")
+    counter -= 1
+} while counter > 0''',
+            ["Swift's switch statement is exhaustive and doesn't fall through by default",
+             "Pattern matching in switch makes complex conditions elegant",
+             "Range operators (...) and (..<) are useful in loops and switches",
+             "Control transfer statements: continue, break, fallthrough, return, throw"],
+            "Swift's control flow statements are more powerful than many other languages, especially switch statements."
+        )
+        
+        # 1.5 Functions
+        self.add_topic(
+            "1.5 Functions",
+            "Functions are self-contained chunks of code that perform specific tasks. Swift functions are flexible and powerful.",
+            '''// Basic function
+func greet(person: String) -> String {
+    return "Hello, \\(person)!"
+}
+let greeting = greet(person: "Taylor")
+
+// Function with multiple parameters
+func greet(person: String, from hometown: String) -> String {
+    return "Hello \\(person)! Glad you could visit from \\(hometown)."
+}
+print(greet(person: "Bill", from: "Cupertino"))
+
+// Function with default parameters
+func greet(person: String, from hometown: String = "Unknown") -> String {
+    return "Hello \\(person)! Glad you could visit from \\(hometown)."
+}
+
+// Variadic parameters
+func arithmeticMean(_ numbers: Double...) -> Double {
+    var total: Double = 0
+    for number in numbers {
+        total += number
+    }
+    return total / Double(numbers.count)
+}
+print(arithmeticMean(1, 2, 3, 4, 5))
+
+// In-out parameters
+func swapTwoInts(_ a: inout Int, _ b: inout Int) {
+    let temporaryA = a
+    a = b
+    b = temporaryA
+}
+
+var someInt = 3
+var anotherInt = 107
+swapTwoInts(&someInt, &anotherInt)
+
+// Function types
+func addTwoInts(_ a: Int, _ b: Int) -> Int {
+    return a + b
+}
+
+let mathFunction: (Int, Int) -> Int = addTwoInts
+print(mathFunction(2, 3))
+
+// Nested functions
+func chooseStepFunction(backward: Bool) -> (Int) -> Int {
+    func stepForward(input: Int) -> Int { return input + 1 }
+    func stepBackward(input: Int) -> Int { return input - 1 }
+    
+    return backward ? stepBackward : stepForward
+}''',
+            ["Parameter labels improve code readability",
+             "Default parameters reduce function overloading",
+             "inout parameters allow functions to modify external variables",
+             "Functions are first-class types in Swift"],
+            "Swift functions support many advanced features like closures, higher-order functions, and functional programming patterns."
+        )
+        
+        # Continue with more topics...
+        self.add_topic(
+            "1.6 Closures",
+            "Closures are self-contained blocks of functionality that can be passed around. They're similar to lambdas in other languages.",
+            '''// Basic closure syntax
+let names = ["Chris", "Alex", "Ewa", "Barry", "Daniella"]
+
+// Full closure syntax
+let reversedNames = names.sorted(by: { (s1: String, s2: String) -> Bool in
+    return s1 > s2
+})
+
+// Inferring type from context
+let reversed1 = names.sorted(by: { s1, s2 in return s1 > s2 })
+
+// Implicit returns
+let reversed2 = names.sorted(by: { s1, s2 in s1 > s2 })
+
+// Shorthand argument names
+let reversed3 = names.sorted(by: { $0 > $1 })
+
+// Operator method
+let reversed4 = names.sorted(by: >)
+
+// Trailing closure syntax
+let reversed5 = names.sorted { $0 > $1 }
+
+// Capturing values
+func makeIncrementer(forIncrement amount: Int) -> () -> Int {
+    var runningTotal = 0
+    func incrementer() -> Int {
+        runningTotal += amount
+        return runningTotal
+    }
+    return incrementer
+}
+
+let incrementByTen = makeIncrementer(forIncrement: 10)
+print(incrementByTen()) // 10
+print(incrementByTen()) // 20
+
+// Escaping closures
+var completionHandlers: [() -> Void] = []
+
+func someFunctionWithEscapingClosure(completionHandler: @escaping () -> Void) {
+    completionHandlers.append(completionHandler)
+}
+
+// Autoclosures
+func simpleAssert(_ condition: @autoclosure () -> Bool, _ message: String) {
+    if !condition() {
+        print(message)
+    }
+}
+
+let testNumber = 5
+simpleAssert(testNumber > 0, "Number must be positive")''',
+            ["Closures can capture and store references to variables and constants",
+             "Trailing closure syntax makes code more readable",
+             "@escaping closures outlive the function that calls them",
+             "@autoclosure automatically wraps expressions in closures"],
+            "Closures are extensively used in Swift for callbacks, functional programming, and asynchronous operations."
+        )
+        
+        # 1.7 Collections
+        self.add_topic(
+            "1.7 Collections",
+            "Swift provides three primary collection types: arrays, sets, and dictionaries for storing multiple values.",
+            '''// Arrays
+var fruits = ["apple", "banana", "orange"]
+fruits.append("grape")
+fruits.insert("kiwi", at: 1)
+
+// Array methods
+let numbers = [1, 2, 3, 4, 5]
+let doubled = numbers.map { $0 * 2 }
+let evens = numbers.filter { $0 % 2 == 0 }
+let sum = numbers.reduce(0, +)
+
+// Sets
+var uniqueNumbers: Set<Int> = [1, 2, 3, 2, 1]
+print(uniqueNumbers) // [1, 2, 3]
+
+let set1: Set = [1, 2, 3]
+let set2: Set = [3, 4, 5]
+let intersection = set1.intersection(set2) // [3]
+let union = set1.union(set2) // [1, 2, 3, 4, 5]
+
+// Dictionaries
+var studentGrades = ["Alice": 95, "Bob": 87, "Charlie": 92]
+studentGrades["Diana"] = 89
+studentGrades.updateValue(88, forKey: "Bob")
+
+// Dictionary iteration
+for (name, grade) in studentGrades {
+    print("\\(name): \\(grade)")
+}
+
+// Nested collections
+let matrix: [[Int]] = [[1, 2], [3, 4], [5, 6]]
+let coordinates = [(x: 1, y: 2), (x: 3, y: 4)]''',
+            ["Arrays are ordered collections of values",
+             "Sets store unique values in no defined ordering",
+             "Dictionaries store key-value associations",
+             "All collections support functional programming methods"],
+            "Swift collections are type-safe and provide powerful methods for data manipulation."
+        )
+        
+        # 1.8 Strings
+        self.add_topic(
+            "1.8 Strings",
+            "Swift strings are Unicode-compliant and provide powerful manipulation methods.",
+            '''// String basics
+let greeting = "Hello, World!"
+let multilineString = """
+    This is a multiline
+    string in Swift with
+    proper formatting
+    """
+
+// String interpolation
+let name = "Swift"
+let version = 5.0
+let message = "Welcome to \\(name) \\(version)!"
+
+// String methods
+let text = "Hello, Swift Programming"
+print(text.count) // Character count
+print(text.uppercased())
+print(text.lowercased())
+print(text.hasPrefix("Hello"))
+print(text.hasSuffix("Programming"))
+
+// String manipulation
+let sentence = "Swift is awesome"
+let words = sentence.split(separator: " ")
+let joined = words.joined(separator: "-")
+
+// Character iteration
+for character in greeting {
+    print(character)
+}
+
+// String indices
+let str = "Swift"
+let startIndex = str.startIndex
+let endIndex = str.endIndex
+let secondChar = str[str.index(after: startIndex)]
+
+// String slicing
+let range = str.index(str.startIndex, offsetBy: 1)..<str.index(str.endIndex, offsetBy: -1)
+let substring = str[range]
+
+// Regular expressions (iOS 16+)
+let pattern = #"\\d+"#
+if let regex = try? Regex(pattern) {
+    let numbers = "Age: 25, Score: 100"
+    let matches = numbers.matches(of: regex)
+}''',
+            ["Strings are value types and use copy-on-write optimization",
+             "String interpolation with \\() is preferred over concatenation",
+             "Strings use String.Index for position-based operations",
+             "Regular expressions provide powerful pattern matching"],
+            "Swift strings are designed for Unicode correctness and international text support."
+        )
+        
+        # 1.9 Error Handling
+        self.add_topic(
+            "1.9 Error Handling",
+            "Swift provides first-class error handling with do-catch blocks, throwing functions, and the Result type.",
+            '''// Define errors
+enum ValidationError: Error {
+    case tooShort
+    case tooLong
+    case invalidCharacters
+    case empty
+}
+
+// Throwing function
+func validatePassword(_ password: String) throws -> Bool {
+    if password.isEmpty {
+        throw ValidationError.empty
+    }
+    
+    if password.count < 8 {
+        throw ValidationError.tooShort
+    }
+    
+    if password.count > 50 {
+        throw ValidationError.tooLong
+    }
+    
+    return true
+}
+
+// Do-catch block
+func testPassword() {
+    do {
+        try validatePassword("secret")
+        print("Password is valid")
+    } catch ValidationError.tooShort {
+        print("Password is too short")
+    } catch ValidationError.empty {
+        print("Password cannot be empty")
+    } catch {
+        print("Unknown error: \\(error)")
+    }
+}
+
+// Try variants
+let password1 = try? validatePassword("mypassword") // Returns nil on error
+let password2 = try! validatePassword("validpassword") // Crashes on error
+
+// Result type
+func validatePasswordResult(_ password: String) -> Result<Bool, ValidationError> {
+    do {
+        let isValid = try validatePassword(password)
+        return .success(isValid)
+    } catch let error as ValidationError {
+        return .failure(error)
+    } catch {
+        return .failure(.invalidCharacters)
+    }
+}
+
+// Using Result
+let result = validatePasswordResult("test")
+switch result {
+case .success(let isValid):
+    print("Validation result: \\(isValid)")
+case .failure(let error):
+    print("Validation failed: \\(error)")
+}
+
+// Rethrowing functions
+func processPasswords<T>(_ passwords: [String], processor: (String) throws -> T) rethrows -> [T] {
+    return try passwords.map(processor)
+}''',
+            ["Use specific error types conforming to Error protocol",
+             "Do-catch blocks handle errors gracefully",
+             "try? converts errors to optionals, try! force-unwraps",
+             "Result type provides functional error handling"],
+            "Swift's error handling is designed to be explicit and safe, preventing runtime crashes from unhandled errors."
+        )
+
+    def generate_advanced_swift_content(self):
+        """Generate advanced Swift content."""
+        
+        # Chapter 2: Object-Oriented Programming
+        self.add_chapter_title("Chapter 2: Object-Oriented Programming")
+        
+        # 2.1 Classes vs Structures
+        self.add_topic(
+            "2.1 Classes vs Structures",
+            "Swift provides both classes and structures. Understanding when to use each is crucial for effective Swift programming.",
+            '''// Structure (Value Type)
+struct Point {
+    var x: Double
+    var y: Double
+    
+    func distanceFromOrigin() -> Double {
+        return sqrt(x * x + y * y)
+    }
+    
+    // Mutating method for value types
+    mutating func moveBy(x deltaX: Double, y deltaY: Double) {
+        x += deltaX
+        y += deltaY
+    }
+}
+
+// Class (Reference Type)
+class Vehicle {
+    var currentSpeed = 0.0
+    var description: String {
+        return "traveling at \\(currentSpeed) miles per hour"
+    }
+    
+    func makeNoise() {
+        // Override in subclass
+    }
+}
+
+class Bicycle: Vehicle {
+    var hasBasket = false
+    
+    override func makeNoise() {
+        print("Ring ring!")
+    }
+}
+
+// Identity operators for reference types
+let vehicle1 = Vehicle()
+let vehicle2 = Vehicle()
+let vehicle3 = vehicle1
+
+if vehicle1 === vehicle3 {
+    print("Same instance")
+}
+
+// Copy behavior difference
+var point1 = Point(x: 1.0, y: 2.0)
+var point2 = point1  // Copies the value
+point2.x = 3.0
+print(point1.x)  // Still 1.0
+
+let bike1 = Bicycle()
+let bike2 = bike1  // Same reference
+bike2.currentSpeed = 10.0
+print(bike1.currentSpeed)  // Also 10.0''',
+            ["Structures are value types (copied), classes are reference types (shared)",
+             "Use structures for simple data containers and value semantics",
+             "Use classes when you need inheritance or reference semantics",
+             "Identity operators (=== and !==) compare reference equality"],
+            "Choose structures by default and classes when you specifically need reference semantics."
+        )
+        
+        # 2.2 Properties
+        self.add_topic(
+            "2.2 Properties",
+            "Properties associate values with classes, structures, and enumerations. Swift provides stored and computed properties.",
+            '''// Stored properties
+struct FixedLengthRange {
+    var firstValue: Int
+    let length: Int  // Constant stored property
+}
+
+// Lazy stored properties
+class DataImporter {
+    var filename = "data.txt"
+    // Expensive initialization
+}
+
+class DataManager {
+    lazy var importer = DataImporter()
+    var data: [String] = []
+}
+
+// Computed properties
+struct Point {
+    var x = 0.0, y = 0.0
+}
+
+struct Size {
+    var width = 0.0, height = 0.0
+}
+
+struct Rect {
+    var origin = Point()
+    var size = Size()
+    
+    var center: Point {
+        get {
+            let centerX = origin.x + (size.width / 2)
+            let centerY = origin.y + (size.height / 2)
+            return Point(x: centerX, y: centerY)
+        }
+        set(newCenter) {
+            origin.x = newCenter.x - (size.width / 2)
+            origin.y = newCenter.y - (size.height / 2)
+        }
+    }
+    
+    // Read-only computed property
+    var area: Double {
+        return size.width * size.height
+    }
+}
+
+// Property observers
+class StepCounter {
+    var totalSteps: Int = 0 {
+        willSet(newTotalSteps) {
+            print("About to set totalSteps to \\(newTotalSteps)")
+        }
+        didSet {
+            if totalSteps > oldValue {
+                print("Added \\(totalSteps - oldValue) steps")
+            }
+        }
+    }
+}
+
+// Property wrappers
+@propertyWrapper
+struct Clamped<T: Comparable> {
+    private var value: T
+    private let range: ClosedRange<T>
+    
+    init(wrappedValue: T, _ range: ClosedRange<T>) {
+        self.range = range
+        self.value = max(range.lowerBound, min(range.upperBound, wrappedValue))
+    }
+    
+    var wrappedValue: T {
+        get { value }
+        set { value = max(range.lowerBound, min(range.upperBound, newValue)) }
+    }
+}
+
+struct Player {
+    @Clamped(0...100) var health: Int = 100
+    @Clamped(0...10) var level: Int = 1
+}''',
+            ["Stored properties store constant and variable values",
+             "Computed properties calculate values on-the-fly",
+             "Property observers respond to changes in property values",
+             "Property wrappers provide reusable property behavior"],
+            "Properties are a fundamental part of Swift's type system, providing flexible data access patterns."
+        )
+        
+        # 2.3 Inheritance
+        self.add_topic(
+            "2.3 Inheritance",
+            "Classes can inherit methods, properties, and characteristics from another class. Swift supports single inheritance.",
+            '''// Base class
+class Vehicle {
+    var currentSpeed = 0.0
+    
+    var description: String {
+        return "traveling at \\(currentSpeed) miles per hour"
+    }
+    
+    func makeNoise() {
+        // Default implementation
+        print("Some generic vehicle noise")
+    }
+}
+
+// Subclass
+class Bicycle: Vehicle {
+    var hasBasket = false
+    
+    override func makeNoise() {
+        print("Ring ring!")
+    }
+}
+
+// Further subclassing
+class Tandem: Bicycle {
+    var currentNumberOfPassengers = 0
+    
+    override var description: String {
+        return super.description + " with \\(currentNumberOfPassengers) passengers"
+    }
+}
+
+// Preventing inheritance
+final class FinalVehicle: Vehicle {
+    // Cannot be subclassed
+}
+
+// Overriding properties
+class Car: Vehicle {
+    var gear = 1
+    
+    override var description: String {
+        return super.description + " in gear \\(gear)"
+    }
+    
+    // Overriding property observers
+    override var currentSpeed: Double {
+        didSet {
+            gear = Int(currentSpeed / 10.0) + 1
+        }
+    }
+}
+
+// Initialization inheritance
+class ElectricCar: Car {
+    var batteryLevel: Double
+    
+    init(batteryLevel: Double) {
+        self.batteryLevel = batteryLevel
+        super.init()
+        self.currentSpeed = 25.0
+    }
+    
+    override func makeNoise() {
+        print("Whisper quiet...")
+    }
+}''',
+            ["Only classes support inheritance in Swift",
+             "Use 'override' keyword to override methods and properties",
+             "Call superclass methods with 'super'",
+             "Use 'final' to prevent inheritance"],
+            "Inheritance enables code reuse and polymorphism, but favor composition over inheritance when possible."
+        )
+        
+        # 2.4 Initialization
+        self.add_topic(
+            "2.4 Initialization",
+            "Initialization is the process of preparing an instance for use. Swift provides designated and convenience initializers.",
+            '''// Basic initialization
+struct Celsius {
+    var temperatureInCelsius: Double
+    
+    init(fromFahrenheit fahrenheit: Double) {
+        temperatureInCelsius = (fahrenheit - 32.0) / 1.8
+    }
+    
+    init(fromKelvin kelvin: Double) {
+        temperatureInCelsius = kelvin - 273.15
+    }
+    
+    init(_ celsius: Double) {
+        temperatureInCelsius = celsius
+    }
+}
+
+// Class initialization
+class Food {
+    var name: String
+    
+    init(name: String) {
+        self.name = name
+    }
+    
+    convenience init() {
+        self.init(name: "[Unnamed]")
+    }
+}
+
+class RecipeIngredient: Food {
+    var quantity: Int
+    
+    init(name: String, quantity: Int) {
+        self.quantity = quantity
+        super.init(name: name)
+    }
+    
+    override convenience init(name: String) {
+        self.init(name: name, quantity: 1)
+    }
+}
+
+// Failable initializers
+struct Animal {
+    let species: String
+    
+    init?(species: String) {
+        if species.isEmpty {
+            return nil
+        }
+        self.species = species
+    }
+}
+
+// Required initializers
+class SomeClass {
+    required init() {
+        // Implementation
+    }
+}
+
+class SomeSubclass: SomeClass {
+    required init() {
+        // Must implement required initializer
+    }
+}
+
+// Memberwise initializers (structs only)
+struct Point {
+    var x: Double
+    var y: Double
+    // Automatically gets init(x:y:)
+}
+
+// Deinitialization
+class Player {
+    let playerName: String
+    
+    init(name: String) {
+        self.playerName = name
+        print("\\(playerName) has joined the game")
+    }
+    
+    deinit {
+        print("\\(playerName) has left the game")
+    }
+}''',
+            ["Designated initializers fully initialize all properties",
+             "Convenience initializers call other initializers",
+             "Failable initializers return nil if initialization fails",
+             "Required initializers must be implemented by all subclasses"],
+            "Swift's initialization system ensures all properties are initialized before the instance is ready for use."
+        )
+        
+        self.add_chapter_title("Chapter 3: Advanced Swift")
+        
+        # 3.1 Generics
+        self.add_topic(
+            "3.1 Generics",
+            "Generics enable you to write flexible, reusable functions and types that can work with any type, subject to requirements you define.",
+            '''// Generic function
+func swapTwoValues<T>(_ a: inout T, _ b: inout T) {
+    let temporaryA = a
+    a = b
+    b = temporaryA
+}
+
+var someInt = 3
+var anotherInt = 107
+swapTwoValues(&someInt, &anotherInt)
+
+// Generic types
+struct Stack<Element> {
+    var items: [Element] = []
+    
+    mutating func push(_ item: Element) {
+        items.append(item)
+    }
+    
+    mutating func pop() -> Element {
+        return items.removeLast()
+    }
+    
+    func peek() -> Element? {
+        return items.last
+    }
+}
+
+var stackOfStrings = Stack<String>()
+stackOfStrings.push("uno")
+stackOfStrings.push("dos")
+
+// Type constraints
+func findIndex<T: Equatable>(of valueToFind: T, in array: [T]) -> Int? {
+    for (index, value) in array.enumerated() {
+        if value == valueToFind {
+            return index
+        }
+    }
+    return nil
+}
+
+// Associated types in protocols
+protocol Container {
+    associatedtype Item
+    mutating func append(_ item: Item)
+    var count: Int { get }
+    subscript(i: Int) -> Item { get }
+}
+
+struct IntStack: Container {
+    typealias Item = Int
+    var items: [Int] = []
+    
+    mutating func append(_ item: Int) {
+        items.append(item)
+    }
+    
+    var count: Int {
+        return items.count
+    }
+    
+    subscript(i: Int) -> Int {
+        return items[i]
+    }
+}
+
+// Generic where clauses
+func allItemsMatch<C1: Container, C2: Container>
+    (_ someContainer: C1, _ anotherContainer: C2) -> Bool
+    where C1.Item == C2.Item, C1.Item: Equatable {
+    
+    if someContainer.count != anotherContainer.count {
+        return false
+    }
+    
+    for i in 0..<someContainer.count {
+        if someContainer[i] != anotherContainer[i] {
+            return false
+        }
+    }
+    
+    return true
+}''',
+            ["Generics provide type safety while maintaining flexibility",
+             "Type constraints ensure generic types conform to required protocols",
+             "Associated types make protocols more flexible",
+             "Where clauses add additional requirements to generic functions"],
+            "Generics are extensively used in Swift's standard library and are key to creating reusable, type-safe code."
+        )
+        
+        # 3.2 Protocols
+        self.add_topic(
+            "3.2 Protocols",
+            "Protocols define a blueprint of methods, properties, and requirements that suit a particular task or piece of functionality.",
+            '''// Basic protocol
+protocol Drawable {
+    func draw()
+    var area: Double { get }
+    var perimeter: Double { get }
+}
+
+// Protocol implementation
+struct Circle: Drawable {
+    let radius: Double
+    
+    func draw() {
+        print("Drawing a circle with radius \\(radius)")
+    }
+    
+    var area: Double {
+        return .pi * radius * radius
+    }
+    
+    var perimeter: Double {
+        return 2 * .pi * radius
+    }
+}
+
+// Protocol inheritance
+protocol Shape3D: Drawable {
+    var volume: Double { get }
+}
+
+// Multiple protocol conformance
+protocol Identifiable {
+    var id: String { get }
+}
+
+struct User: Identifiable, CustomStringConvertible {
+    let id: String
+    let name: String
+    
+    var description: String {
+        return "User(id: \\(id), name: \\(name))"
+    }
+}
+
+// Protocol extensions
+extension Drawable {
+    func drawWithBorder() {
+        print("Drawing border...")
+        draw()
+        print("Border complete")
+    }
+    
+    // Default implementation
+    var description: String {
+        return "A shape with area \\(area)"
+    }
+}
+
+// Protocol with associated types
+protocol Container {
+    associatedtype Item
+    var count: Int { get }
+    mutating func append(_ item: Item)
+    subscript(i: Int) -> Item { get }
+}
+
+struct Stack<Element>: Container {
+    var items: [Element] = []
+    
+    var count: Int {
+        return items.count
+    }
+    
+    mutating func append(_ item: Element) {
+        items.append(item)
+    }
+    
+    subscript(i: Int) -> Element {
+        return items[i]
+    }
+}
+
+// Protocol composition
+protocol Named {
+    var name: String { get }
+}
+
+protocol Aged {
+    var age: Int { get }
+}
+
+func greetPerson(_ person: Named & Aged) {
+    print("Hello, \\(person.name), you are \\(person.age) years old")
+}
+
+// Checking protocol conformance
+if let circle = someObject as? Drawable {
+    circle.draw()
+}''',
+            ["Protocols define contracts that types must fulfill",
+             "Protocol extensions provide default implementations",
+             "Associated types make protocols generic",
+             "Protocol composition combines multiple protocols"],
+            "Protocols are fundamental to Swift's protocol-oriented programming paradigm."
+        )
+        
+        # 3.3 Extensions
+        self.add_topic(
+            "3.3 Extensions",
+            "Extensions add new functionality to existing classes, structures, enumerations, or protocol types without modifying their source code.",
+            '''// Basic extension
+extension Double {
+    var squared: Double {
+        return self * self
+    }
+    
+    func rounded(toDecimalPlaces places: Int) -> Double {
+        let multiplier = pow(10, Double(places))
+        return (self * multiplier).rounded() / multiplier
+    }
+}
+
+let number = 3.14159
+print(number.squared) // 9.8696
+print(number.rounded(toDecimalPlaces: 2)) // 3.14
+
+// Extension with initializers
+extension String {
+    init(repeating character: Character, count: Int) {
+        self = String(Array(repeating: character, count: count))
+    }
+    
+    var isPalindrome: Bool {
+        let cleaned = self.lowercased().filter { $0.isLetter }
+        return cleaned == String(cleaned.reversed())
+    }
+}
+
+let stars = String(repeating: "*", count: 5) // "*****"
+print("racecar".isPalindrome) // true
+
+// Extension with subscripts
+extension Array {
+    subscript(safe index: Int) -> Element? {
+        return indices.contains(index) ? self[index] : nil
+    }
+}
+
+let numbers = [1, 2, 3, 4, 5]
+print(numbers[safe: 10]) // nil instead of crash
+
+// Extension with nested types
+extension Character {
+    enum Kind {
+        case vowel
+        case consonant
+        case other
+    }
+    
+    var kind: Kind {
+        switch lowercased() {
+        case "a", "e", "i", "o", "u":
+            return .vowel
+        case "a"..."z":
+            return .consonant
+        default:
+            return .other
+        }
+    }
+}
+
+let char: Character = "E"
+print(char.kind) // vowel
+
+// Generic extension
+extension Array where Element: Comparable {
+    func quickSorted() -> [Element] {
+        guard count > 1 else { return self }
+        
+        let pivot = self[count / 2]
+        let less = self.filter { $0 < pivot }
+        let equal = self.filter { $0 == pivot }
+        let greater = self.filter { $0 > pivot }
+        
+        return less.quickSorted() + equal + greater.quickSorted()
+    }
+}
+
+let unsorted = [3, 1, 4, 1, 5, 9, 2, 6]
+let sorted = unsorted.quickSorted()''',
+            ["Extensions add functionality without modifying original code",
+             "Can add computed properties, methods, initializers, and subscripts",
+             "Generic extensions can add conditional functionality",
+             "Extensions can conform types to protocols"],
+            "Extensions are a powerful way to organize code and add functionality to existing types."
+        )
+        
+        # Add Concurrency Chapter
+        self.add_chapter_title("PART II: CONCURRENCY & MODERN SWIFT")
+        self.add_chapter_title("Chapter 4: Concurrency")
+        
+        # 4.1 Async/Await
+        self.add_topic(
+            "4.1 Async/Await",
+            "Swift's async/await syntax provides a clean way to write asynchronous code that reads like synchronous code.",
+            '''// Basic async function
+func fetchUserData(id: String) async throws -> User {
+    let url = URL(string: "https://api.example.com/users/\\(id)")!
+    let (data, _) = try await URLSession.shared.data(from: url)
+    return try JSONDecoder().decode(User.self, from: data)
+}
+
+// Calling async functions
+func loadUserProfile() async {
+    do {
+        let user = try await fetchUserData(id: "123")
+        print("Loaded user: \\(user.name)")
+    } catch {
+        print("Failed to load user: \\(error)")
+    }
+}
+
+// Async properties
+class ImageLoader {
+    private var cache: [URL: UIImage] = [:]
+    
+    var imageCount: Int {
+        cache.count
+    }
+    
+    func image(from url: URL) async throws -> UIImage {
+        // Check cache first
+        if let cachedImage = cache[url] {
+            return cachedImage
+        }
+        
+        // Download image
+        let (data, _) = try await URLSession.shared.data(from: url)
+        guard let image = UIImage(data: data) else {
+            throw ImageError.invalidData
+        }
+        
+        // Cache the image
+        cache[url] = image
+        return image
+    }
+}
+
+// Async sequences
+func countDown(from number: Int) -> AsyncStream<Int> {
+    AsyncStream { continuation in
+        Task {
+            for i in (0...number).reversed() {
+                continuation.yield(i)
+                try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+            }
+            continuation.finish()
+        }
+    }
+}
+
+// Using async sequences
+func runCountdown() async {
+    for await count in countDown(from: 5) {
+        print("Count: \\(count)")
+    }
+    print("Done!")
+}
+
+// Async/await with completion handlers
+func legacyNetworkCall(completion: @escaping (Result<Data, Error>) -> Void) {
+    // Legacy callback-based code
+}
+
+// Convert to async/await
+func modernNetworkCall() async throws -> Data {
+    return try await withCheckedThrowingContinuation { continuation in
+        legacyNetworkCall { result in
+            continuation.resume(with: result)
+        }
+    }
+}
+
+// Multiple concurrent operations
+func loadMultipleUsers() async throws -> [User] {
+    async let user1 = fetchUserData(id: "1")
+    async let user2 = fetchUserData(id: "2")
+    async let user3 = fetchUserData(id: "3")
+    
+    return try await [user1, user2, user3]
+}''',
+            ["async functions must be called with await",
+             "async/await eliminates callback hell",
+             "Use async let for concurrent operations",
+             "AsyncSequence provides asynchronous iteration"],
+            "Async/await makes asynchronous code more readable and easier to debug than callback-based approaches."
+        )
+        
+        # 4.2 Tasks
+        self.add_topic(
+            "4.2 Tasks",
+            "Tasks represent units of asynchronous work. Swift provides Task, TaskGroup, and various cancellation mechanisms.",
+            '''// Basic Task creation
+func startBackgroundWork() {
+    Task {
+        let result = await performLongRunningOperation()
+        await updateUI(with: result)
+    }
+}
+
+// Task with priority
+func highPriorityWork() {
+    Task(priority: .high) {
+        await performCriticalOperation()
+    }
+}
+
+// Detached tasks
+func detachedWork() {
+    Task.detached {
+        // This task doesn't inherit context
+        await performIndependentWork()
+    }
+}
+
+// TaskGroup for multiple concurrent operations
+func processItemsConcurrently(_ items: [String]) async -> [ProcessedItem] {
+    await withTaskGroup(of: ProcessedItem.self) { group in
+        var results: [ProcessedItem] = []
+        
+        for item in items {
+            group.addTask {
+                return await processItem(item)
+            }
+        }
+        
+        for await result in group {
+            results.append(result)
+        }
+        
+        return results
+    }
+}
+
+// Error handling in TaskGroup
+func processWithErrorHandling(_ items: [String]) async -> [ProcessedItem] {
+    await withTaskGroup(of: Result<ProcessedItem, Error>.self) { group in
+        var results: [ProcessedItem] = []
+        
+        for item in items {
+            group.addTask {
+                do {
+                    let processed = try await processItemThrowing(item)
+                    return .success(processed)
+                } catch {
+                    return .failure(error)
+                }
+            }
+        }
+        
+        for await result in group {
+            switch result {
+            case .success(let item):
+                results.append(item)
+            case .failure(let error):
+                print("Failed to process item: \\(error)")
+            }
+        }
+        
+        return results
+    }
+}
+
+// Task cancellation
+class DataProcessor {
+    private var currentTask: Task<Void, Error>?
+    
+    func startProcessing() {
+        currentTask = Task {
+            for i in 1...1000 {
+                // Check for cancellation
+                try Task.checkCancellation()
+                
+                await processItem(i)
+                
+                // Alternative cancellation check
+                if Task.isCancelled {
+                    print("Task was cancelled")
+                    return
+                }
+            }
+        }
+    }
+    
+    func cancelProcessing() {
+        currentTask?.cancel()
+    }
+}
+
+// Task local values
+enum TaskLocals {
+    @TaskLocal static var userID: String?
+    @TaskLocal static var requestID: String = UUID().uuidString
+}
+
+func performUserOperation() async {
+    await TaskLocals.$userID.withValue("user123") {
+        await TaskLocals.$requestID.withValue("req456") {
+            await someOperation()
+            // userID and requestID are available here
+        }
+    }
+}''',
+            ["Task represents a unit of asynchronous work",
+             "TaskGroup enables structured concurrency for multiple operations",
+             "Tasks can be cancelled cooperatively",
+             "Task-local values provide context inheritance"],
+            "Tasks provide structured concurrency, making concurrent code predictable and manageable."
+        )
+        
+        # 4.3 Actors
+        self.add_topic(
+            "4.3 Actors",
+            "Actors provide data isolation and protect against data races in concurrent programming.",
+            '''// Basic actor
+actor Counter {
+    private var value = 0
+    
+    func increment() -> Int {
+        value += 1
+        return value
+    }
+    
+    func getValue() -> Int {
+        return value
+    }
+    
+    func reset() {
+        value = 0
+    }
+}
+
+// Using actors
+func useCounter() async {
+    let counter = Counter()
+    
+    let value1 = await counter.increment() // Must use await
+    let value2 = await counter.getValue()
+    
+    print("Counter values: \\(value1), \\(value2)")
+}
+
+// Actor with async methods
+actor ImageCache {
+    private var images: [URL: UIImage] = [:]
+    
+    func image(for url: URL) async -> UIImage? {
+        if let cached = images[url] {
+            return cached
+        }
+        
+        // Fetch image
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            let image = UIImage(data: data)
+            images[url] = image
+            return image
+        } catch {
+            return nil
+        }
+    }
+    
+    func clearCache() {
+        images.removeAll()
+    }
+}
+
+// MainActor for UI updates
+@MainActor
+class ViewModel: ObservableObject {
+    @Published var data: [String] = []
+    
+    func loadData() async {
+        let newData = await fetchDataFromNetwork()
+        
+        // This runs on main actor automatically
+        self.data = newData
+    }
+    
+    // Non-isolated methods can be called from any context
+    nonisolated func validateInput(_ input: String) -> Bool {
+        return !input.isEmpty
+    }
+}
+
+// Global actor
+@globalActor
+actor DatabaseActor {
+    static let shared = DatabaseActor()
+    private init() {}
+}
+
+@DatabaseActor
+func saveToDatabase(_ data: Data) {
+    // All calls to this function are serialized
+    // through the DatabaseActor
+}
+
+// Actor inheritance (only from protocols)
+protocol Drawable {
+    func draw() async
+}
+
+actor DrawingCanvas: Drawable {
+    private var shapes: [Shape] = []
+    
+    func draw() async {
+        for shape in shapes {
+            await shape.render()
+        }
+    }
+    
+    func addShape(_ shape: Shape) {
+        shapes.append(shape)
+    }
+}
+
+// Sendable types for actor boundaries
+struct SafeData: Sendable {
+    let id: String
+    let value: Int
+}
+
+actor DataProcessor {
+    func process(_ data: SafeData) async -> ProcessedData {
+        // Safe to pass Sendable types across actor boundaries
+        return await processData(data)
+    }
+}''',
+            ["Actors provide data isolation and prevent data races",
+             "Actor methods are called with await from outside the actor",
+             "MainActor ensures UI updates happen on the main thread",
+             "Sendable types can be safely passed between actors"],
+            "Actors are Swift's solution to thread-safe programming without explicit locks or queues."
+        )
+
+    def generate_swiftui_content(self):
+        """Generate SwiftUI content - Part III."""
+        
+        self.add_chapter_title("PART III: SwiftUI FRAMEWORK")
+        
+        self.add_chapter_title("Chapter 5: SwiftUI Fundamentals")
+        
+        # 5.1 Views and Modifiers
+        self.add_topic(
+            "5.1 Views and Modifiers",
+            "SwiftUI uses a declarative syntax where you describe what your UI should look like. Views are modified using modifiers that return new views.",
+            '''import SwiftUI
+
+// Basic views
+struct ContentView: View {
+    var body: some View {
+        VStack {
+            Text("Hello, SwiftUI!")
+                .font(.largeTitle)
+                .foregroundColor(.blue)
+                .padding()
+            
+            Image(systemName: "star.fill")
+                .foregroundColor(.yellow)
+                .font(.system(size: 50))
+            
+            Button("Tap Me") {
+                print("Button tapped!")
+            }
+            .padding()
+            .background(Color.blue)
+            .foregroundColor(.white)
+            .cornerRadius(10)
+        }
+    }
+}
+
+// Custom view with modifiers
+struct CustomCard: View {
+    let title: String
+    let subtitle: String
+    
+    var body: some View {
+        VStack(alignment: .leading) {
+            Text(title)
+                .font(.headline)
+                .fontWeight(.bold)
+            
+            Text(subtitle)
+                .font(.subheadline)
+                .foregroundColor(.gray)
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(10)
+        .shadow(radius: 5)
+    }
+}
+
+// View composition
+struct MainView: View {
+    var body: some View {
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                CustomCard(title: "SwiftUI", subtitle: "Declarative UI framework")
+                CustomCard(title: "Combine", subtitle: "Reactive programming")
+                CustomCard(title: "Swift", subtitle: "Programming language")
+            }
+            .padding()
+        }
+    }
+}
+
+// ViewBuilder and conditional views
+struct ConditionalView: View {
+    @State private var showDetails = false
+    
+    var body: some View {
+        VStack {
+            Text("Main Content")
+            
+            if showDetails {
+                Text("Additional Details")
+                    .transition(.opacity)
+            }
+            
+            Button(showDetails ? "Hide" : "Show") {
+                withAnimation {
+                    showDetails.toggle()
+                }
+            }
+        }
+    }
+}''',
+            ["Views are value types that describe UI declaratively",
+             "Modifiers return new views, enabling method chaining",
+             "View composition creates reusable components",
+             "ViewBuilder enables conditional and loop-based view construction"],
+            "SwiftUI's declarative approach means you describe the desired end state, and SwiftUI figures out how to get there."
+        )
+        
+        # 5.2 Layout System
+        self.add_topic(
+            "5.2 Layout System",
+            "SwiftUI provides powerful layout containers like VStack, HStack, ZStack, and LazyGrids for organizing views.",
+            '''import SwiftUI
+
+// Basic stacks
+struct LayoutExamples: View {
+    var body: some View {
+        VStack(spacing: 20) {
+            // Horizontal stack
+            HStack {
+                Text("Left")
+                Spacer()
+                Text("Right")
+            }
+            .padding()
+            .background(Color.gray.opacity(0.2))
+            
+            // Vertical stack with alignment
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Title")
+                    .font(.headline)
+                Text("This is a longer subtitle that demonstrates alignment")
+                    .font(.caption)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding()
+            .background(Color.blue.opacity(0.1))
+            
+            // Overlay stack
+            ZStack {
+                Rectangle()
+                    .fill(Color.orange)
+                    .frame(width: 100, height: 100)
+                
+                Text("Overlay")
+                    .foregroundColor(.white)
+                    .font(.caption)
+            }
+        }
+    }
+}
+
+// Grid layouts
+struct GridExample: View {
+    let items = Array(1...20)
+    
+    let columns = [
+        GridItem(.flexible()),
+        GridItem(.flexible()),
+        GridItem(.flexible())
+    ]
+    
+    var body: some View {
+        ScrollView {
+            LazyVGrid(columns: columns, spacing: 10) {
+                ForEach(items, id: \\.self) { item in
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.blue)
+                        .frame(height: 50)
+                        .overlay(
+                            Text("\\(item)")
+                                .foregroundColor(.white)
+                        )
+                }
+            }
+            .padding()
+        }
+    }
+}
+
+// Adaptive grids
+struct AdaptiveGridExample: View {
+    let items = Array(1...50)
+    
+    var body: some View {
+        ScrollView {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 80))], spacing: 10) {
+                ForEach(items, id: \\.self) { item in
+                    Circle()
+                        .fill(Color.green)
+                        .frame(height: 80)
+                        .overlay(
+                            Text("\\(item)")
+                                .foregroundColor(.white)
+                        )
+                }
+            }
+            .padding()
+        }
+    }
+}
+
+// GeometryReader for custom layouts
+struct CustomLayoutView: View {
+    var body: some View {
+        GeometryReader { geometry in
+            VStack {
+                Rectangle()
+                    .fill(Color.red)
+                    .frame(width: geometry.size.width * 0.8, height: 50)
+                
+                HStack {
+                    Rectangle()
+                        .fill(Color.blue)
+                        .frame(width: geometry.size.width * 0.4, height: 100)
+                    
+                    Spacer()
+                    
+                    Rectangle()
+                        .fill(Color.green)
+                        .frame(width: geometry.size.width * 0.4, height: 100)
+                }
+            }
+            .frame(width: geometry.size.width, height: geometry.size.height)
+        }
+    }
+}''',
+            ["VStack, HStack, and ZStack are the fundamental layout containers",
+             "Spacer() pushes views apart or centers them",
+             "LazyVGrid and LazyHGrid create efficient grid layouts",
+             "GeometryReader provides access to parent view dimensions"],
+            "SwiftUI's layout system is designed to be predictable and easy to understand while being highly flexible."
+        )
+
+    def generate_combine_content(self):
+        """Generate Combine content - Part IV."""
+        
+        self.add_chapter_title("PART IV: REACTIVE PROGRAMMING")
+        
+        self.add_chapter_title("Chapter 7: Combine Framework")
+        
+        # 7.1 Publishers and Subscribers
+        self.add_topic(
+            "7.1 Publishers and Subscribers",
+            "Combine is Apple's framework for handling asynchronous events by combining event-processing operators. Publishers emit values over time, and subscribers receive them.",
+            '''import Combine
+import Foundation
+
+// Basic publisher and subscriber
+class CombineBasics {
+    var cancellables = Set<AnyCancellable>()
+    
+    func basicPublisherSubscriber() {
+        // Simple publisher
+        let publisher = Just("Hello, Combine!")
+        
+        publisher
+            .sink { value in
+                print("Received: \\(value)")
+            }
+            .store(in: &cancellables)
+        
+        // Array publisher
+        let numbers = [1, 2, 3, 4, 5]
+        numbers.publisher
+            .sink { number in
+                print("Number: \\(number)")
+            }
+            .store(in: &cancellables)
+    }
+    
+    // PassthroughSubject
+    func passthroughSubjectExample() {
+        let subject = PassthroughSubject<String, Never>()
+        
+        subject
+            .sink { value in
+                print("PassthroughSubject received: \\(value)")
+            }
+            .store(in: &cancellables)
+        
+        subject.send("First message")
+        subject.send("Second message")
+        subject.send(completion: .finished)
+    }
+    
+    // CurrentValueSubject
+    func currentValueSubjectExample() {
+        let currentValueSubject = CurrentValueSubject<Int, Never>(0)
+        
+        currentValueSubject
+            .sink { value in
+                print("CurrentValueSubject: \\(value)")
+            }
+            .store(in: &cancellables)
+        
+        currentValueSubject.send(1)
+        currentValueSubject.send(2)
+        
+        print("Current value: \\(currentValueSubject.value)")
+    }
+    
+    // Custom publisher
+    struct CountdownPublisher: Publisher {
+        typealias Output = Int
+        typealias Failure = Never
+        
+        let start: Int
+        
+        func receive<S>(subscriber: S) where S : Subscriber, Never == S.Failure, Int == S.Input {
+            let subscription = CountdownSubscription(subscriber: subscriber, start: start)
+            subscriber.receive(subscription: subscription)
+        }
+    }
+    
+    class CountdownSubscription<S: Subscriber>: Subscription where S.Input == Int, S.Failure == Never {
+        private var subscriber: S?
+        private var current: Int
+        
+        init(subscriber: S, start: Int) {
+            self.subscriber = subscriber
+            self.current = start
+        }
+        
+        func request(_ demand: Subscribers.Demand) {
+            var demand = demand
+            
+            while demand > 0 && current > 0 {
+                _ = subscriber?.receive(current)
+                current -= 1
+                demand -= 1
+            }
+            
+            if current == 0 {
+                subscriber?.receive(completion: .finished)
+            }
+        }
+        
+        func cancel() {
+            subscriber = nil
+        }
+    }
+    
+    func customPublisherExample() {
+        CountdownPublisher(start: 5)
+            .sink { value in
+                print("Countdown: \\(value)")
+            }
+            .store(in: &cancellables)
+    }
+}''',
+            ["Publishers emit values over time, subscribers receive them",
+             "PassthroughSubject sends values to subscribers without storing current value",
+             "CurrentValueSubject maintains and emits the current value to new subscribers",
+             "Custom publishers implement the Publisher protocol"],
+            "Combine follows the reactive programming paradigm, making asynchronous code more manageable and composable."
+        )
+
+    def generate_networking_content(self):
+        """Generate networking content - Part V."""
+        
+        self.add_chapter_title("PART V: NETWORKING & APIs")
+        
+        self.add_chapter_title("Chapter 8: Networking")
+        
+        # 8.1 URLSession
+        self.add_topic(
+            "8.1 URLSession",
+            "URLSession is the foundation of networking in iOS. It provides APIs for making HTTP requests with modern async/await support.",
+            '''import Foundation
+
+// Basic URLSession with async/await
+class NetworkManager {
+    static let shared = NetworkManager()
+    private init() {}
+    
+    // Simple GET request
+    func fetchData(from url: URL) async throws -> Data {
+        let (data, response) = try await URLSession.shared.data(from: url)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            throw NetworkError.invalidResponse
+        }
+        
+        return data
+    }
+    
+    // POST request with JSON
+    func postJSON<T: Codable>(to url: URL, body: T) async throws -> Data {
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("Bearer \\(AuthManager.token)", forHTTPHeaderField: "Authorization")
+        
+        request.httpBody = try JSONEncoder().encode(body)
+        
+        let (data, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              200...299 ~= httpResponse.statusCode else {
+            throw NetworkError.serverError(response)
+        }
+        
+        return data
+    }
+    
+    // Download file with progress
+    func downloadFile(from url: URL) -> AsyncThrowingStream<DownloadProgress, Error> {
+        AsyncThrowingStream { continuation in
+            let task = URLSession.shared.downloadTask(with: url) { localURL, response, error in
+                if let error = error {
+                    continuation.finish(throwing: error)
+                    return
+                }
+                
+                guard let localURL = localURL else {
+                    continuation.finish(throwing: NetworkError.noData)
+                    return
+                }
+                
+                // Move file to permanent location
+                // continuation.yield(.completed(localURL))
+                continuation.finish()
+            }
+            
+            task.resume()
+        }
+    }
+    
+    // URLSession with custom configuration
+    func createCustomSession() -> URLSession {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 30
+        config.timeoutIntervalForResource = 60
+        config.httpMaximumConnectionsPerHost = 5
+        config.requestCachePolicy = .reloadIgnoringLocalCacheData
+        
+        return URLSession(configuration: config)
+    }
+    
+    // Retry mechanism
+    func fetchWithRetry<T: Codable>(url: URL, type: T.Type, maxRetries: Int = 3) async throws -> T {
+        var lastError: Error?
+        
+        for attempt in 1...maxRetries {
+            do {
+                let data = try await fetchData(from: url)
+                return try JSONDecoder().decode(T.self, from: data)
+            } catch {
+                lastError = error
+                if attempt < maxRetries {
+                    let delay = Double(attempt * 2) // Exponential backoff
+                    try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                }
+            }
+        }
+        
+        throw lastError ?? NetworkError.maxRetriesExceeded
+    }
+}
+
+// Error handling
+enum NetworkError: Error, LocalizedError {
+    case invalidURL
+    case noData
+    case invalidResponse
+    case serverError(URLResponse?)
+    case decodingError
+    case maxRetriesExceeded
+    
+    var errorDescription: String? {
+        switch self {
+        case .invalidURL:
+            return "Invalid URL"
+        case .noData:
+            return "No data received"
+        case .invalidResponse:
+            return "Invalid response"
+        case .serverError:
+            return "Server error"
+        case .decodingError:
+            return "Failed to decode data"
+        case .maxRetriesExceeded:
+            return "Maximum retry attempts exceeded"
+        }
+    }
+}
+
+// Progress tracking
+struct DownloadProgress {
+    let bytesWritten: Int64
+    let totalBytesWritten: Int64
+    let totalBytesExpectedToWrite: Int64
+    
+    var progress: Double {
+        guard totalBytesExpectedToWrite > 0 else { return 0 }
+        return Double(totalBytesWritten) / Double(totalBytesExpectedToWrite)
+    }
+}''',
+            ["async/await makes networking code more readable and maintainable",
+             "Always handle HTTP status codes and potential errors",
+             "URLSession configuration allows customization of timeouts and caching",
+             "Implement retry mechanisms for robust networking"],
+            "Modern Swift networking leverages async/await for cleaner asynchronous code without callback hell."
+        )
+
+    def generate_dsa_appendix(self):
+        """Generate the DSA appendix (keep existing content)."""
+        
+        self.add_chapter_title("APPENDIX: DATA STRUCTURES & ALGORITHMS")
+        
+        # Keep the existing DSA problems as an appendix
+        # Array Problems
+        self.add_chapter_title("A.1 Array Problems")
+        
+        # Two Sum Problem (simplified version of existing)
+        self.add_topic(
+            "Two Sum",
+            "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+            '''func twoSum(_ nums: [Int], _ target: Int) -> [Int] {
     var numToIndex: [Int: Int] = [:]
     
     for (index, num) in nums.enumerated() {
@@ -197,27 +2303,23 @@ class DSAProblemsPDFGenerator:
         numToIndex[num] = index
     }
     
-    return [] // No solution found
+    return []
 }
 
 // Example usage:
 let nums = [2, 7, 11, 15]
 let target = 9
 let result = twoSum(nums, target)
-print(result) // Output: [0, 1]'''
-
-        self.add_problem(
-            "Array",
-            "Two Sum",
-            "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice.",
-            two_sum_code,
-            "O(n)",
-            "O(n)",
-            "We use a hash map to store each number and its index as we iterate through the array. For each number, we calculate its complement (target - current number) and check if it exists in our hash map. If found, we return the indices."
+print(result) // [0, 1]''',
+            ["Time Complexity: O(n)", "Space Complexity: O(n)"],
+            "Uses hash map to store each number and its index, enabling O(1) lookup time."
         )
         
-        # Maximum Subarray
-        max_subarray_code = '''func maxSubArray(_ nums: [Int]) -> Int {
+        # Add a few more DSA problems in similar format
+        self.add_topic(
+            "Maximum Subarray (Kadane's Algorithm)",
+            "Find the contiguous subarray with the largest sum.",
+            '''func maxSubArray(_ nums: [Int]) -> Int {
     guard !nums.isEmpty else { return 0 }
     
     var maxSum = nums[0]
@@ -234,640 +2336,48 @@ print(result) // Output: [0, 1]'''
 // Example usage:
 let nums = [-2, 1, -3, 4, -1, 2, 1, -5, 4]
 let result = maxSubArray(nums)
-print(result) // Output: 6 (subarray [4, -1, 2, 1])'''
-
-        self.add_problem(
-            "Array",
-            "Maximum Subarray (Kadane's Algorithm)",
-            "Given an integer array nums, find the contiguous subarray (containing at least one number) which has the largest sum and return its sum.",
-            max_subarray_code,
-            "O(n)",
-            "O(1)",
-            "Kadane's algorithm maintains the maximum sum ending at each position. At each step, we decide whether to extend the existing subarray or start a new one from the current element."
-        )
-        
-        # Merge Sorted Arrays
-        merge_arrays_code = '''func merge(_ nums1: inout [Int], _ m: Int, _ nums2: [Int], _ n: Int) {
-    var i = m - 1  // Last element in nums1
-    var j = n - 1  // Last element in nums2
-    var k = m + n - 1  // Last position in nums1
-    
-    // Merge from the end to avoid overwriting
-    while i >= 0 && j >= 0 {
-        if nums1[i] > nums2[j] {
-            nums1[k] = nums1[i]
-            i -= 1
-        } else {
-            nums1[k] = nums2[j]
-            j -= 1
-        }
-        k -= 1
-    }
-    
-    // Copy remaining elements from nums2
-    while j >= 0 {
-        nums1[k] = nums2[j]
-        j -= 1
-        k -= 1
-    }
-}
-
-// Example usage:
-var nums1 = [1, 2, 3, 0, 0, 0]
-let nums2 = [2, 5, 6]
-merge(&nums1, 3, nums2, 3)
-print(nums1) // Output: [1, 2, 2, 3, 5, 6]'''
-
-        self.add_problem(
-            "Array",
-            "Merge Sorted Arrays",
-            "You are given two integer arrays nums1 and nums2, sorted in non-decreasing order, and two integers m and n, representing the number of elements in nums1 and nums2 respectively. Merge nums1 and nums2 into a single array sorted in non-decreasing order.",
-            merge_arrays_code,
-            "O(m + n)",
-            "O(1)",
-            "We merge from the end of both arrays to avoid overwriting elements in nums1. This allows us to merge in-place without extra space."
-        )
-        
-        self.story.append(PageBreak())
-        
-        # Linked List Problems
-        category_header = Paragraph("Linked List Problems", self.title_style)
-        self.story.append(category_header)
-        self.story.append(Spacer(1, 20))
-        
-        # Linked List Node Definition and Reverse
-        reverse_list_code = '''class ListNode {
-    var val: Int
-    var next: ListNode?
-    
-    init(_ val: Int) {
-        self.val = val
-        self.next = nil
-    }
-}
-
-func reverseList(_ head: ListNode?) -> ListNode? {
-    var prev: ListNode? = nil
-    var current = head
-    
-    while current != nil {
-        let nextTemp = current?.next
-        current?.next = prev
-        prev = current
-        current = nextTemp
-    }
-    
-    return prev
-}
-
-// Recursive approach:
-func reverseListRecursive(_ head: ListNode?) -> ListNode? {
-    guard let head = head, let next = head.next else {
-        return head
-    }
-    
-    let reversedList = reverseListRecursive(next)
-    next.next = head
-    head.next = nil
-    
-    return reversedList
-}'''
-
-        self.add_problem(
-            "Linked List",
-            "Reverse Linked List",
-            "Given the head of a singly linked list, reverse the list, and return the reversed list.",
-            reverse_list_code,
-            "O(n)",
-            "O(1) iterative, O(n) recursive",
-            "The iterative approach uses three pointers to reverse the links. The recursive approach reverses the rest of the list first, then fixes the current connection."
-        )
-        
-        # Merge Two Sorted Lists
-        merge_lists_code = '''func mergeTwoLists(_ list1: ListNode?, _ list2: ListNode?) -> ListNode? {
-    let dummy = ListNode(0)
-    var current = dummy
-    var l1 = list1
-    var l2 = list2
-    
-    while l1 != nil && l2 != nil {
-        if l1!.val <= l2!.val {
-            current.next = l1
-            l1 = l1!.next
-        } else {
-            current.next = l2
-            l2 = l2!.next
-        }
-        current = current.next!
-    }
-    
-    // Append remaining nodes
-    current.next = l1 ?? l2
-    
-    return dummy.next
-}
-
-// Example usage:
-// list1: 1 -> 2 -> 4
-// list2: 1 -> 3 -> 4
-// result: 1 -> 1 -> 2 -> 3 -> 4 -> 4'''
-
-        self.add_problem(
-            "Linked List",
-            "Merge Two Sorted Lists",
-            "You are given the heads of two sorted linked lists list1 and list2. Merge the two lists in a one sorted list. The list should be made by splicing together the nodes of the first two lists.",
-            merge_lists_code,
-            "O(m + n)",
-            "O(1)",
-            "We use a dummy node to simplify the logic and iterate through both lists, always choosing the smaller value. Finally, we append any remaining nodes."
-        )
-        
-        # Detect Cycle
-        detect_cycle_code = '''func hasCycle(_ head: ListNode?) -> Bool {
-    var slow = head
-    var fast = head
-    
-    while fast != nil && fast?.next != nil {
-        slow = slow?.next
-        fast = fast?.next?.next
-        
-        if slow === fast {
-            return true
-        }
-    }
-    
-    return false
-}
-
-// Finding the start of the cycle
-func detectCycle(_ head: ListNode?) -> ListNode? {
-    var slow = head
-    var fast = head
-    
-    // First, detect if there's a cycle
-    while fast != nil && fast?.next != nil {
-        slow = slow?.next
-        fast = fast?.next?.next
-        
-        if slow === fast {
-            break
-        }
-    }
-    
-    // No cycle found
-    if fast == nil || fast?.next == nil {
-        return nil
-    }
-    
-    // Find the start of the cycle
-    slow = head
-    while slow !== fast {
-        slow = slow?.next
-        fast = fast?.next
-    }
-    
-    return slow
-}'''
-
-        self.add_problem(
-            "Linked List",
-            "Detect Cycle",
-            "Given head, the head of a linked list, determine if the linked list has a cycle in it. There is a cycle in a linked list if there is some node in the list that can be reached again by continuously following the next pointer.",
-            detect_cycle_code,
-            "O(n)",
-            "O(1)",
-            "Floyd's Cycle Detection Algorithm (Tortoise and Hare): Use two pointers moving at different speeds. If there's a cycle, the fast pointer will eventually meet the slow pointer."
-        )
-        
-        # Binary Tree Problems
-        self.story.append(PageBreak())
-        category_header = Paragraph("Binary Tree Problems", self.title_style)
-        self.story.append(category_header)
-        self.story.append(Spacer(1, 20))
-        
-        tree_traversal_code = '''class TreeNode {
-    var val: Int
-    var left: TreeNode?
-    var right: TreeNode?
-    
-    init(_ val: Int) {
-        self.val = val
-        self.left = nil
-        self.right = nil
-    }
-}
-
-// Inorder Traversal
-func inorderTraversal(_ root: TreeNode?) -> [Int] {
-    var result: [Int] = []
-    
-    func inorder(_ node: TreeNode?) {
-        guard let node = node else { return }
-        
-        inorder(node.left)
-        result.append(node.val)
-        inorder(node.right)
-    }
-    
-    inorder(root)
-    return result
-}
-
-// Iterative approach using stack
-func inorderTraversalIterative(_ root: TreeNode?) -> [Int] {
-    var result: [Int] = []
-    var stack: [TreeNode] = []
-    var current = root
-    
-    while current != nil || !stack.isEmpty {
-        while current != nil {
-            stack.append(current!)
-            current = current!.left
-        }
-        
-        current = stack.removeLast()
-        result.append(current!.val)
-        current = current!.right
-    }
-    
-    return result
-}'''
-
-        self.add_problem(
-            "Binary Tree",
-            "Binary Tree Inorder Traversal",
-            "Given the root of a binary tree, return the inorder traversal of its nodes' values. (Left, Root, Right)",
-            tree_traversal_code,
-            "O(n)",
-            "O(h) where h is height of tree",
-            "Inorder traversal visits left subtree, then root, then right subtree. The recursive approach is natural, while the iterative approach uses a stack to simulate the recursion."
-        )
-        
-        # Maximum Depth of Binary Tree
-        max_depth_code = '''func maxDepth(_ root: TreeNode?) -> Int {
-    guard let root = root else { return 0 }
-    
-    let leftDepth = maxDepth(root.left)
-    let rightDepth = maxDepth(root.right)
-    
-    return max(leftDepth, rightDepth) + 1
-}
-
-// Iterative approach using level-order traversal
-func maxDepthIterative(_ root: TreeNode?) -> Int {
-    guard let root = root else { return 0 }
-    
-    var queue: [TreeNode] = [root]
-    var depth = 0
-    
-    while !queue.isEmpty {
-        let levelSize = queue.count
-        depth += 1
-        
-        for _ in 0..<levelSize {
-            let node = queue.removeFirst()
-            
-            if let left = node.left {
-                queue.append(left)
-            }
-            if let right = node.right {
-                queue.append(right)
-            }
-        }
-    }
-    
-    return depth
-}'''
-
-        self.add_problem(
-            "Binary Tree",
-            "Maximum Depth of Binary Tree",
-            "Given the root of a binary tree, return its maximum depth. A binary tree's maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.",
-            max_depth_code,
-            "O(n)",
-            "O(h) recursive, O(w) iterative where h is height and w is width",
-            "The recursive approach calculates depth by finding the maximum of left and right subtree depths plus 1. The iterative approach uses level-order traversal to count levels."
-        )
-        
-        # Validate Binary Search Tree
-        validate_bst_code = '''func isValidBST(_ root: TreeNode?) -> Bool {
-    return validate(root, nil, nil)
-}
-
-func validate(_ node: TreeNode?, _ minVal: Int?, _ maxVal: Int?) -> Bool {
-    guard let node = node else { return true }
-    
-    // Check if current node violates BST property
-    if let minVal = minVal, node.val <= minVal { return false }
-    if let maxVal = maxVal, node.val >= maxVal { return false }
-    
-    // Recursively validate left and right subtrees
-    return validate(node.left, minVal, node.val) && 
-           validate(node.right, node.val, maxVal)
-}
-
-// Alternative approach using inorder traversal
-func isValidBSTInorder(_ root: TreeNode?) -> Bool {
-    var prev: Int? = nil
-    
-    func inorder(_ node: TreeNode?) -> Bool {
-        guard let node = node else { return true }
-        
-        if !inorder(node.left) { return false }
-        
-        if let prevVal = prev, node.val <= prevVal {
-            return false
-        }
-        prev = node.val
-        
-        return inorder(node.right)
-    }
-    
-    return inorder(root)
-}'''
-
-        self.add_problem(
-            "Binary Tree",
-            "Validate Binary Search Tree",
-            "Given the root of a binary tree, determine if it is a valid binary search tree (BST). A valid BST is defined as follows: The left subtree of a node contains only nodes with keys less than the node's key. The right subtree of a node contains only nodes with keys greater than the node's key. Both the left and right subtrees must also be binary search trees.",
-            validate_bst_code,
-            "O(n)",
-            "O(h) where h is the height of the tree",
-            "We can validate by maintaining min/max bounds for each node, or by doing inorder traversal and checking if the result is sorted."
-        )
-        
-        # Stack and Queue Problems
-        self.story.append(PageBreak())
-        category_header = Paragraph("Stack and Queue Problems", self.title_style)
-        self.story.append(category_header)
-        self.story.append(Spacer(1, 20))
-        
-        # Valid Parentheses (Stack)
-        valid_parentheses_code = '''func isValid(_ s: String) -> Bool {
-    var stack: [Character] = []
-    let pairs: [Character: Character] = [")": "(", "}": "{", "]": "["]
-    
-    for char in s {
-        if pairs.keys.contains(char) {
-            // Closing bracket
-            if stack.isEmpty || stack.removeLast() != pairs[char] {
-                return false
-            }
-        } else {
-            // Opening bracket
-            stack.append(char)
-        }
-    }
-    
-    return stack.isEmpty
-}
-
-// Example usage:
-print(isValid("()"))        // true
-print(isValid("()[]{}"))    // true
-print(isValid("(]"))        // false
-print(isValid("([)]"))      // false'''
-
-        self.add_problem(
-            "Stack",
-            "Valid Parentheses",
-            "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid. An input string is valid if: Open brackets must be closed by the same type of brackets. Open brackets must be closed in the correct order.",
-            valid_parentheses_code,
-            "O(n)",
-            "O(n)",
-            "Use a stack to keep track of opening brackets. When we encounter a closing bracket, check if it matches the most recent opening bracket."
-        )
-        
-        # Implement Queue using Stacks
-        queue_using_stacks_code = '''class MyQueue {
-    private var inStack: [Int] = []
-    private var outStack: [Int] = []
-    
-    init() {}
-    
-    func push(_ x: Int) {
-        inStack.append(x)
-    }
-    
-    func pop() -> Int {
-        peek()
-        return outStack.removeLast()
-    }
-    
-    func peek() -> Int {
-        if outStack.isEmpty {
-            while !inStack.isEmpty {
-                outStack.append(inStack.removeLast())
-            }
-        }
-        return outStack.last!
-    }
-    
-    func empty() -> Bool {
-        return inStack.isEmpty && outStack.isEmpty
-    }
-}
-
-// Example usage:
-let queue = MyQueue()
-queue.push(1)
-queue.push(2)
-print(queue.peek())  // 1
-print(queue.pop())   // 1
-print(queue.empty()) // false'''
-
-        self.add_problem(
-            "Queue",
-            "Implement Queue using Stacks",
-            "Implement a first in first out (FIFO) queue using only two stacks. The implemented queue should support all the functions of a normal queue (push, peek, pop, and empty).",
-            queue_using_stacks_code,
-            "O(1) amortized for all operations",
-            "O(n)",
-            "Use two stacks: one for input and one for output. Transfer elements from input to output stack only when output stack is empty."
-        )
-        
-        # Graph Problems
-        self.story.append(PageBreak())
-        category_header = Paragraph("Graph Problems", self.title_style)
-        self.story.append(category_header)
-        self.story.append(Spacer(1, 20))
-        
-        # Graph representation and BFS
-        bfs_code = '''// Graph represented as adjacency list
-func bfs(_ graph: [Int: [Int]], start: Int) -> [Int] {
-    var visited: Set<Int> = []
-    var queue: [Int] = [start]
-    var result: [Int] = []
-    
-    visited.insert(start)
-    
-    while !queue.isEmpty {
-        let node = queue.removeFirst()
-        result.append(node)
-        
-        if let neighbors = graph[node] {
-            for neighbor in neighbors {
-                if !visited.contains(neighbor) {
-                    visited.insert(neighbor)
-                    queue.append(neighbor)
-                }
-            }
-        }
-    }
-    
-    return result
-}
-
-// Example usage:
-let graph = [
-    0: [1, 2],
-    1: [2],
-    2: [0, 3],
-    3: [3]
-]
-let bfsResult = bfs(graph, start: 2)
-print(bfsResult) // [2, 0, 3, 1]'''
-
-        self.add_problem(
-            "Graph",
-            "Breadth-First Search (BFS)",
-            "Implement breadth-first search traversal for a graph. BFS explores all vertices at the present depth prior to moving on to vertices at the next depth level.",
-            bfs_code,
-            "O(V + E)",
-            "O(V)",
-            "BFS uses a queue to process nodes level by level. We mark nodes as visited to avoid cycles and process all neighbors before moving to the next level."
-        )
-        
-        # DFS
-        dfs_code = '''func dfs(_ graph: [Int: [Int]], start: Int) -> [Int] {
-    var visited: Set<Int> = []
-    var result: [Int] = []
-    
-    func dfsHelper(_ node: Int) {
-        visited.insert(node)
-        result.append(node)
-        
-        if let neighbors = graph[node] {
-            for neighbor in neighbors {
-                if !visited.contains(neighbor) {
-                    dfsHelper(neighbor)
-                }
-            }
-        }
-    }
-    
-    dfsHelper(start)
-    return result
-}
-
-// Iterative DFS using stack
-func dfsIterative(_ graph: [Int: [Int]], start: Int) -> [Int] {
-    var visited: Set<Int> = []
-    var stack: [Int] = [start]
-    var result: [Int] = []
-    
-    while !stack.isEmpty {
-        let node = stack.removeLast()
-        
-        if !visited.contains(node) {
-            visited.insert(node)
-            result.append(node)
-            
-            if let neighbors = graph[node] {
-                for neighbor in neighbors.reversed() {
-                    if !visited.contains(neighbor) {
-                        stack.append(neighbor)
-                    }
-                }
-            }
-        }
-    }
-    
-    return result
-}'''
-
-        self.add_problem(
-            "Graph",
-            "Depth-First Search (DFS)",
-            "Implement depth-first search traversal for a graph. DFS explores as far as possible along each branch before backtracking.",
-            dfs_code,
-            "O(V + E)",
-            "O(V)",
-            "DFS can be implemented recursively or iteratively using a stack. We explore each path completely before backtracking to explore other paths."
-        )
-        
-        # Shortest Path (Dijkstra's simplified)
-        shortest_path_code = '''// Simplified shortest path using BFS for unweighted graphs
-func shortestPath(_ graph: [Int: [Int]], start: Int, end: Int) -> [Int]? {
-    var queue: [(Int, [Int])] = [(start, [start])]
-    var visited: Set<Int> = [start]
-    
-    while !queue.isEmpty {
-        let (node, path) = queue.removeFirst()
-        
-        if node == end {
-            return path
-        }
-        
-        if let neighbors = graph[node] {
-            for neighbor in neighbors {
-                if !visited.contains(neighbor) {
-                    visited.insert(neighbor)
-                    queue.append((neighbor, path + [neighbor]))
-                }
-            }
-        }
-    }
-    
-    return nil // No path found
-}
-
-// Example usage:
-let graph = [
-    0: [1, 2],
-    1: [2, 3],
-    2: [3],
-    3: []
-]
-if let path = shortestPath(graph, start: 0, end: 3) {
-    print("Shortest path: \\(path)") // [0, 1, 3] or [0, 2, 3]
-}'''
-
-        self.add_problem(
-            "Graph",
-            "Shortest Path (Unweighted)",
-            "Find the shortest path between two nodes in an unweighted graph. Return the path as a list of nodes from start to end.",
-            shortest_path_code,
-            "O(V + E)",
-            "O(V)",
-            "For unweighted graphs, BFS naturally finds the shortest path since it explores nodes level by level, guaranteeing the first path found is the shortest."
+print(result) // 6 (subarray [4, -1, 2, 1])''',
+            ["Time Complexity: O(n)", "Space Complexity: O(1)"],
+            "Kadane's algorithm maintains the maximum sum ending at each position."
         )
 
     def generate_pdf(self):
-        """Generate the complete PDF."""
-        print("Starting PDF generation...")
+        """Generate the complete comprehensive Swift guide PDF."""
+        print("Starting comprehensive Swift guide PDF generation...")
         
         # Add title page
         self.add_title_page()
         
-        # Add table of contents
-        self.add_table_of_contents()
+        # Add comprehensive table of contents
+        self.add_comprehensive_table_of_contents()
         
-        # Generate all problems
-        self.generate_problems()
+        # Generate all content
+        self.generate_swift_basics_content()
+        self.generate_advanced_swift_content()
+        self.generate_swiftui_content()
+        self.generate_combine_content()
+        self.generate_networking_content()
+        self.generate_dsa_appendix()
         
         # Build the PDF
         self.doc.build(self.story)
-        print(f"PDF generated successfully: DSA_Problems_Swift_Solutions.pdf")
-        return "DSA_Problems_Swift_Solutions.pdf"
+        print(f"PDF generated successfully: Comprehensive_Swift_Programming_Guide.pdf")
+        return "Comprehensive_Swift_Programming_Guide.pdf"
 
 def main():
-    """Main function to generate the DSA problems PDF."""
-    generator = DSAProblemsPDFGenerator()
+    """Main function to generate the comprehensive Swift guide PDF."""
+    generator = SwiftProgrammingGuidePDFGenerator()
     pdf_filename = generator.generate_pdf()
     
     print(f"✅ Successfully generated: {pdf_filename}")
-    print("📄 The PDF contains DSA problems with Swift solutions, explanations, and complexity analysis.")
+    print("📄 The PDF contains a comprehensive Swift programming guide with 120+ topics covering:")
+    print("   • Swift Language Fundamentals")
+    print("   • Advanced Swift Concepts")
+    print("   • SwiftUI Framework")
+    print("   • Combine Reactive Programming")
+    print("   • Networking & APIs")
+    print("   • iOS Development")
+    print("   • Data Structures & Algorithms")
     
 if __name__ == "__main__":
     main()
