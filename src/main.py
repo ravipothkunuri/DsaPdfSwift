@@ -15,9 +15,10 @@ import io
 import re
 from datetime import datetime
 
-class SwiftProgrammingGuidePDFGenerator:
+class DSAProblemsSwiftPDFGenerator:
     def __init__(self):
-        self.doc = SimpleDocTemplate("Comprehensive_Swift_Programming_Guide.pdf", pagesize=A4)
+        self.doc = SimpleDocTemplate("DSA_Problems_Swift_Solutions.pdf", pagesize=A4)
+        self.problem_count = 0  # Track number of problems added
         self.styles = getSampleStyleSheet()
         self.story = []
         self.setup_custom_styles()
@@ -8533,27 +8534,29 @@ func minMeetingRoomsEvents(_ intervals: [[Int]]) -> Int {
         self.story.append(summary_para)
 
     def generate_pdf(self):
-        """Generate the complete comprehensive Swift guide PDF."""
-        print("Starting comprehensive Swift guide PDF generation...")
+        """Generate the dedicated DSA problems Swift solutions PDF."""
+        print("Starting DSA Problems PDF generation with validation...")
         
-        # Add title page
-        self.add_title_page()
+        # Add title page for DSA
+        self.add_dsa_title_page()
         
-        # Add comprehensive table of contents
-        self.add_comprehensive_table_of_contents()
+        # Add DSA table of contents
+        self.add_dsa_table_of_contents()
         
-        # Generate all content
-        self.generate_swift_basics_content()
-        self.generate_advanced_swift_content()
-        self.generate_swiftui_content()
-        self.generate_combine_content()
-        self.generate_networking_content()
-        self.generate_dsa_appendix()
+        # Generate DSA content only
+        self.generate_dsa_content()
+        
+        # Validate 111 problems were added
+        if self.problem_count != 111:
+            print(f"❌ VALIDATION FAILED: Expected 111 problems, got {self.problem_count}")
+            return None
+            
+        print(f"✅ VALIDATION PASSED: All {self.problem_count} DSA problems verified")
         
         # Build the PDF
         self.doc.build(self.story)
-        print(f"PDF generated successfully: Comprehensive_Swift_Programming_Guide.pdf")
-        return "Comprehensive_Swift_Programming_Guide.pdf"
+        print(f"PDF generated successfully: DSA_Problems_Swift_Solutions.pdf")
+        return "DSA_Problems_Swift_Solutions.pdf"
 
 def main():
     """Main function to generate the comprehensive Swift guide PDF."""
