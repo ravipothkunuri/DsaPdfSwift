@@ -1878,6 +1878,502 @@ struct ConditionalView: View {
             "SwiftUI's declarative approach means you describe the desired end state, and SwiftUI figures out how to get there."
         )
         
+        # 5.3 State Management
+        self.add_topic(
+            "5.3 State Management",
+            "SwiftUI uses various property wrappers to manage state and data flow in your application.",
+            '''import SwiftUI
+
+// @State for local state
+struct CounterView: View {
+    @State private var count = 0
+    
+    var body: some View {
+        VStack {
+            Text("Count: \\(count)")
+                .font(.largeTitle)
+            
+            HStack {
+                Button("Increment") {
+                    count += 1
+                }
+                
+                Button("Decrement") {
+                    count -= 1
+                }
+                
+                Button("Reset") {
+                    count = 0
+                }
+            }
+        }
+    }
+}
+
+// @Binding for two-way data flow
+struct ToggleView: View {
+    @Binding var isOn: Bool
+    
+    var body: some View {
+        Toggle("Feature Enabled", isOn: $isOn)
+            .padding()
+    }
+}
+
+struct ParentView: View {
+    @State private var featureEnabled = false
+    
+    var body: some View {
+        VStack {
+            Text("Feature is \\(featureEnabled ? "ON" : "OFF")")
+            ToggleView(isOn: $featureEnabled)
+        }
+    }
+}
+
+// @ObservableObject and @Published
+class UserStore: ObservableObject {
+    @Published var users: [User] = []
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+    
+    func loadUsers() async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            let fetchedUsers = try await NetworkService.fetchUsers()
+            await MainActor.run {
+                self.users = fetchedUsers
+                self.isLoading = false
+            }
+        } catch {
+            await MainActor.run {
+                self.errorMessage = error.localizedDescription
+                self.isLoading = false
+            }
+        }
+    }
+}
+
+struct UserListView: View {
+    @StateObject private var userStore = UserStore()
+    
+    var body: some View {
+        NavigationView {
+            Group {
+                if userStore.isLoading {
+                    ProgressView("Loading users...")
+                } else if let error = userStore.errorMessage {
+                    Text("Error: \\(error)")
+                        .foregroundColor(.red)
+                } else {
+                    List(userStore.users) { user in
+                        UserRowView(user: user)
+                    }
+                }
+            }
+            .navigationTitle("Users")
+            .task {
+                await userStore.loadUsers()
+            }
+        }
+    }
+}
+
+// @EnvironmentObject for dependency injection
+struct ContentView: View {
+    var body: some View {
+        TabView {
+            UserListView()
+                .tabItem {
+                    Image(systemName: "person.3")
+                    Text("Users")
+                }
+            
+            SettingsView()
+                .tabItem {
+                    Image(systemName: "gear")
+                    Text("Settings")
+                }
+        }
+        .environmentObject(UserStore())
+    }
+}
+
+// @AppStorage for UserDefaults
+struct SettingsView: View {
+    @AppStorage("username") private var username = ""
+    @AppStorage("isDarkMode") private var isDarkMode = false
+    @AppStorage("fontSize") private var fontSize = 16.0
+    
+    var body: some View {
+        Form {
+            Section("User Preferences") {
+                TextField("Username", text: $username)
+                
+                Toggle("Dark Mode", isOn: $isDarkMode)
+                
+                Stepper("Font Size: \\(Int(fontSize))", value: $fontSize, in: 12...24)
+            }
+        }
+        .preferredColorScheme(isDarkMode ? .dark : .light)
+    }
+}''',
+            ["@State manages local view state",
+             "@Binding creates two-way data connections",
+             "@StateObject creates and owns ObservableObject instances",
+             "@EnvironmentObject shares data across the view hierarchy",
+             "@AppStorage automatically syncs with UserDefaults"],
+            "SwiftUI's reactive state management system automatically updates views when data changes."
+        )
+        
+        # 5.4 Navigation
+        self.add_topic(
+            "5.4 Navigation",
+            "SwiftUI provides various navigation patterns including NavigationView, NavigationLink, and programmatic navigation.",
+            '''import SwiftUI
+
+// Basic Navigation
+struct ContentView: View {
+    var body: some View {
+        NavigationView {
+            List {
+                NavigationLink("Profile", destination: ProfileView())
+                NavigationLink("Settings", destination: SettingsView())
+                NavigationLink("About", destination: AboutView())
+            }
+            .navigationTitle("Main Menu")
+            .navigationBarTitleDisplayMode(.large)
+        }
+    }
+}
+
+// NavigationStack (iOS 16+)
+struct ModernNavigationView: View {
+    @State private var path = NavigationPath()
+    
+    var body: some View {
+        NavigationStack(path: $path) {
+            List {
+                Button("Go to Detail") {
+                    path.append("detail")
+                }
+                
+                Button("Go to Settings") {
+                    path.append("settings")
+                }
+            }
+            .navigationDestination(for: String.self) { value in
+                switch value {
+                case "detail":
+                    DetailView()
+                case "settings":
+                    SettingsView()
+                default:
+                    Text("Unknown destination")
+                }
+            }
+            .navigationTitle("Navigation Stack")
+        }
+    }
+}
+
+// Programmatic navigation
+class NavigationController: ObservableObject {
+    @Published var isShowingDetail = false
+    @Published var selectedUser: User?
+    
+    func showUserDetail(_ user: User) {
+        selectedUser = user
+        isShowingDetail = true
+    }
+    
+    func dismissDetail() {
+        isShowingDetail = false
+        selectedUser = nil
+    }
+}
+
+struct UserListView: View {
+    @StateObject private var navigation = NavigationController()
+    @State private var users: [User] = []
+    
+    var body: some View {
+        NavigationView {
+            List(users) { user in
+                Button(user.name) {
+                    navigation.showUserDetail(user)
+                }
+            }
+            .navigationTitle("Users")
+            .sheet(isPresented: $navigation.isShowingDetail) {
+                if let user = navigation.selectedUser {
+                    UserDetailView(user: user)
+                }
+            }
+        }
+    }
+}
+
+// Tab Navigation
+struct MainTabView: View {
+    @State private var selectedTab = 0
+    
+    var body: some View {
+        TabView(selection: $selectedTab) {
+            HomeView()
+                .tabItem {
+                    Image(systemName: "house")
+                    Text("Home")
+                }
+                .tag(0)
+            
+            SearchView()
+                .tabItem {
+                    Image(systemName: "magnifyingglass")
+                    Text("Search")
+                }
+                .tag(1)
+            
+            ProfileView()
+                .tabItem {
+                    Image(systemName: "person")
+                    Text("Profile")
+                }
+                .tag(2)
+        }
+        .accentColor(.blue)
+    }
+}
+
+// Modal presentation
+struct ModalExampleView: View {
+    @State private var isShowingModal = false
+    @State private var isShowingFullScreen = false
+    
+    var body: some View {
+        VStack(spacing: 20) {
+            Button("Show Sheet") {
+                isShowingModal = true
+            }
+            .sheet(isPresented: $isShowingModal) {
+                ModalContentView(isPresented: $isShowingModal)
+            }
+            
+            Button("Show Full Screen") {
+                isShowingFullScreen = true
+            }
+            .fullScreenCover(isPresented: $isShowingFullScreen) {
+                FullScreenView(isPresented: $isShowingFullScreen)
+            }
+        }
+    }
+}
+
+// Navigation with data passing
+struct ProductListView: View {
+    @State private var products: [Product] = []
+    
+    var body: some View {
+        NavigationView {
+            List(products) { product in
+                NavigationLink(destination: ProductDetailView(product: product)) {
+                    ProductRowView(product: product)
+                }
+            }
+            .navigationTitle("Products")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Add") {
+                        // Add new product
+                    }
+                }
+            }
+        }
+    }
+}''',
+            ["NavigationView provides the foundation for navigation",
+             "NavigationLink creates navigable connections between views",
+             "NavigationStack (iOS 16+) offers more flexible navigation",
+             "Sheet and fullScreenCover present modal views",
+             "TabView creates tab-based navigation"],
+            "SwiftUI navigation is declarative and integrates seamlessly with the framework's reactive patterns."
+        )
+        
+        # 5.5 Animations
+        self.add_topic(
+            "5.5 Animations",
+            "SwiftUI provides powerful animation capabilities with simple, declarative syntax.",
+            '''import SwiftUI
+
+// Basic animations
+struct AnimationExamples: View {
+    @State private var isRotated = false
+    @State private var scale: CGFloat = 1.0
+    @State private var offset: CGFloat = 0
+    
+    var body: some View {
+        VStack(spacing: 40) {
+            // Rotation animation
+            Rectangle()
+                .fill(Color.blue)
+                .frame(width: 50, height: 50)
+                .rotationEffect(.degrees(isRotated ? 180 : 0))
+                .animation(.easeInOut(duration: 1), value: isRotated)
+                .onTapGesture {
+                    isRotated.toggle()
+                }
+            
+            // Scale animation
+            Circle()
+                .fill(Color.green)
+                .frame(width: 50, height: 50)
+                .scaleEffect(scale)
+                .animation(.spring(response: 0.5, dampingFraction: 0.6), value: scale)
+                .onTapGesture {
+                    scale = scale == 1.0 ? 1.5 : 1.0
+                }
+            
+            // Offset animation
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.orange)
+                .frame(width: 50, height: 50)
+                .offset(x: offset)
+                .animation(.bouncy, value: offset)
+                .onTapGesture {
+                    offset = offset == 0 ? 100 : 0
+                }
+        }
+    }
+}
+
+// withAnimation for explicit animation
+struct ExplicitAnimationView: View {
+    @State private var isExpanded = false
+    
+    var body: some View {
+        VStack {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.purple)
+                .frame(width: isExpanded ? 200 : 100, height: isExpanded ? 200 : 100)
+            
+            Button("Animate") {
+                withAnimation(.spring(duration: 0.8)) {
+                    isExpanded.toggle()
+                }
+            }
+        }
+    }
+}
+
+// Transitions
+struct TransitionView: View {
+    @State private var showDetail = false
+    
+    var body: some View {
+        VStack {
+            if showDetail {
+                VStack {
+                    Text("Detail View")
+                        .font(.largeTitle)
+                        .padding()
+                    
+                    Text("This is additional detail information")
+                        .padding()
+                }
+                .background(Color.gray.opacity(0.1))
+                .cornerRadius(10)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .move(edge: .leading).combined(with: .opacity)
+                ))
+            }
+            
+            Button(showDetail ? "Hide" : "Show") {
+                withAnimation(.easeInOut) {
+                    showDetail.toggle()
+                }
+            }
+        }
+        .padding()
+    }
+}
+
+// Custom animations
+struct WaveView: View {
+    @State private var animateWave = false
+    
+    var body: some View {
+        ZStack {
+            ForEach(0..<3) { index in
+                Circle()
+                    .stroke(Color.blue.opacity(0.3), lineWidth: 2)
+                    .frame(width: 50, height: 50)
+                    .scaleEffect(animateWave ? 3 : 1)
+                    .opacity(animateWave ? 0 : 1)
+                    .animation(.easeOut(duration: 2).repeatForever(autoreverses: false).delay(Double(index) * 0.5), value: animateWave)
+            }
+        }
+        .onAppear {
+            animateWave = true
+        }
+    }
+}
+
+// Complex animation sequences
+struct LoadingView: View {
+    @State private var isLoading = false
+    
+    var body: some View {
+        HStack {
+            ForEach(0..<3) { index in
+                Circle()
+                    .fill(Color.blue)
+                    .frame(width: 10, height: 10)
+                    .scaleEffect(isLoading ? 1.0 : 0.5)
+                    .animation(.easeInOut(duration: 0.6).repeatForever().delay(0.2 * Double(index)), value: isLoading)
+            }
+        }
+        .onAppear {
+            isLoading = true
+        }
+    }
+}
+
+// Gesture-driven animations
+struct DragView: View {
+    @State private var dragAmount = CGSize.zero
+    
+    var body: some View {
+        VStack {
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.red)
+                .frame(width: 100, height: 100)
+                .offset(dragAmount)
+                .gesture(
+                    DragGesture()
+                        .onChanged { dragAmount = $0.translation }
+                        .onEnded { _ in
+                            withAnimation(.spring()) {
+                                dragAmount = .zero
+                            }
+                        }
+                )
+            
+            Text("Drag the square!")
+                .padding()
+        }
+    }
+}''',
+            ["Use .animation() modifier for implicit animations",
+             "withAnimation provides explicit control over animations",
+             "Transitions define how views appear and disappear",
+             "Spring animations provide natural motion",
+             "Combine animations with gestures for interactive experiences"],
+            "SwiftUI animations are declarative and automatically handle the complex details of smooth transitions."
+        )
+        
         # 5.2 Layout System
         self.add_topic(
             "5.2 Layout System",
