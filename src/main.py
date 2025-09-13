@@ -4929,47 +4929,813 @@ print(maxArea(height)) // 49''',
             "Sort intervals by start time, then merge overlapping ones."
         )
         
-        # Continue with remaining array problems with actual implementations...
-        remaining_array_problems = [
-            ("A.1.13 Insert Interval ⭐⭐", "Insert into sorted intervals", "func insert(_ intervals: [[Int]], _ newInterval: [Int]) -> [[Int]] { /* implementation */ }"),
-            ("A.1.14 Rotate Array ⭐", "Rotate array right by k steps", "func rotate(_ nums: inout [Int], _ k: Int) { /* implementation */ }"),
-            ("A.1.15 Jump Game ⭐⭐", "Can reach the last index", "func canJump(_ nums: [Int]) -> Bool { /* implementation */ }"),
-            ("A.1.16 Spiral Matrix ⭐⭐", "Return elements in spiral order", "func spiralOrder(_ matrix: [[Int]]) -> [Int] { /* implementation */ }"),
-            ("A.1.17 Meeting Rooms ⭐", "Check if can attend all meetings", "func canAttendMeetings(_ intervals: [[Int]]) -> Bool { /* implementation */ }"),
-            ("A.1.18 Meeting Rooms II ⭐⭐", "Minimum meeting rooms needed", "func minMeetingRooms(_ intervals: [[Int]]) -> Int { /* implementation */ }"),
-            ("A.1.19 Non-overlapping Intervals ⭐⭐", "Remove minimum intervals", "func eraseOverlapIntervals(_ intervals: [[Int]]) -> Int { /* implementation */ }"),
-            ("A.1.20 Jump Game II ⭐⭐", "Minimum jumps to reach end", "func jump(_ nums: [Int]) -> Int { /* implementation */ }")
-        ]
+        # Array Problem 13: Insert Interval
+        self.add_topic(
+            "A.1.13 Insert Interval ⭐⭐",
+            "Insert a new interval into sorted non-overlapping intervals.",
+            '''func insert(_ intervals: [[Int]], _ newInterval: [Int]) -> [[Int]] {
+    var result: [[Int]] = []
+    var i = 0
+    var current = newInterval
+    
+    // Add all intervals before the new interval
+    while i < intervals.count && intervals[i][1] < current[0] {
+        result.append(intervals[i])
+        i += 1
+    }
+    
+    // Merge overlapping intervals
+    while i < intervals.count && intervals[i][0] <= current[1] {
+        current[0] = min(current[0], intervals[i][0])
+        current[1] = max(current[1], intervals[i][1])
+        i += 1
+    }
+    result.append(current)
+    
+    // Add remaining intervals
+    while i < intervals.count {
+        result.append(intervals[i])
+        i += 1
+    }
+    
+    return result
+}''',
+            ["Time: O(n)", "Space: O(1)", "Three-phase insertion"],
+            "Insert and merge by finding correct position and handling overlaps."
+        )
         
-        for (title, description, code) in remaining_array_problems:
-            self.add_topic(title, description, code, ["Time/Space complexity"], "Algorithm explanation")
+        # Array Problem 14: Rotate Array
+        self.add_topic(
+            "A.1.14 Rotate Array ⭐",
+            "Rotate array to the right by k steps in-place.",
+            '''func rotate(_ nums: inout [Int], _ k: Int) {
+    let n = nums.count
+    let k = k % n
+    
+    func reverse(_ start: Int, _ end: Int) {
+        var left = start, right = end
+        while left < right {
+            nums.swapAt(left, right)
+            left += 1
+            right -= 1
+        }
+    }
+    
+    // Reverse entire array
+    reverse(0, n - 1)
+    // Reverse first k elements
+    reverse(0, k - 1)
+    // Reverse remaining elements
+    reverse(k, n - 1)
+}
+
+// Test case
+var nums = [1, 2, 3, 4, 5, 6, 7]
+rotate(&nums, 3)
+print(nums) // [5, 6, 7, 1, 2, 3, 4]''',
+            ["Time: O(n)", "Space: O(1)", "Three reversals technique"],
+            "Use three reversals: entire array, first k, last n-k elements."
+        )
+        
+        # Array Problem 15: Jump Game
+        self.add_topic(
+            "A.1.15 Jump Game ⭐⭐",
+            "Determine if you can reach the last index.",
+            '''func canJump(_ nums: [Int]) -> Bool {
+    var maxReach = 0
+    
+    for i in 0..<nums.count {
+        if i > maxReach { return false }
+        maxReach = max(maxReach, i + nums[i])
+        if maxReach >= nums.count - 1 { return true }
+    }
+    
+    return maxReach >= nums.count - 1
+}
+
+// Test case
+let nums1 = [2, 3, 1, 1, 4] // true
+let nums2 = [3, 2, 1, 0, 4] // false
+print(canJump(nums1), canJump(nums2))''',
+            ["Time: O(n)", "Space: O(1)", "Greedy approach"],
+            "Track maximum reachable index, return false if gap found."
+        )
+        
+        # Array Problem 16: Spiral Matrix
+        self.add_topic(
+            "A.1.16 Spiral Matrix ⭐⭐",
+            "Return all elements of matrix in spiral order.",
+            '''func spiralOrder(_ matrix: [[Int]]) -> [Int] {
+    guard !matrix.isEmpty else { return [] }
+    
+    var result: [Int] = []
+    var top = 0, bottom = matrix.count - 1
+    var left = 0, right = matrix[0].count - 1
+    
+    while top <= bottom && left <= right {
+        // Right
+        for col in left...right {
+            result.append(matrix[top][col])
+        }
+        top += 1
+        
+        // Down
+        for row in top...bottom {
+            result.append(matrix[row][right])
+        }
+        right -= 1
+        
+        // Left (if still valid row)
+        if top <= bottom {
+            for col in stride(from: right, through: left, by: -1) {
+                result.append(matrix[bottom][col])
+            }
+            bottom -= 1
+        }
+        
+        // Up (if still valid column)
+        if left <= right {
+            for row in stride(from: bottom, through: top, by: -1) {
+                result.append(matrix[row][left])
+            }
+            left += 1
+        }
+    }
+    
+    return result
+}''',
+            ["Time: O(m×n)", "Space: O(1)", "Four-direction traversal"],
+            "Use four boundaries and traverse in spiral pattern."
+        )
+        
+        # Array Problem 17: Meeting Rooms
+        self.add_topic(
+            "A.1.17 Meeting Rooms ⭐",
+            "Determine if person can attend all meetings.",
+            '''func canAttendMeetings(_ intervals: [[Int]]) -> Bool {
+    guard intervals.count > 1 else { return true }
+    
+    let sorted = intervals.sorted { $0[0] < $1[0] }
+    
+    for i in 1..<sorted.count {
+        if sorted[i][0] < sorted[i-1][1] {
+            return false
+        }
+    }
+    
+    return true
+}
+
+// Test case
+let meetings1 = [[0,30],[5,10],[15,20]] // false
+let meetings2 = [[7,10],[2,4]] // true
+print(canAttendMeetings(meetings1))''',
+            ["Time: O(n log n)", "Space: O(1)", "Sort by start time"],
+            "Sort meetings by start time, check for overlaps."
+        )
+        
+        # Array Problem 18: Meeting Rooms II
+        self.add_topic(
+            "A.1.18 Meeting Rooms II ⭐⭐",
+            "Find minimum number of meeting rooms needed.",
+            '''func minMeetingRooms(_ intervals: [[Int]]) -> Int {
+    var starts = intervals.map { $0[0] }.sorted()
+    var ends = intervals.map { $0[1] }.sorted()
+    
+    var rooms = 0
+    var endPtr = 0
+    
+    for start in starts {
+        if start >= ends[endPtr] {
+            endPtr += 1
+        } else {
+            rooms += 1
+        }
+    }
+    
+    return rooms
+}
+
+// Test case
+let meetings = [[0,30],[5,10],[15,20]]
+print(minMeetingRooms(meetings)) // 2''',
+            ["Time: O(n log n)", "Space: O(n)", "Two pointers on sorted arrays"],
+            "Separate start/end times, use two pointers to track concurrent meetings."
+        )
+        
+        # Array Problem 19: Non-overlapping Intervals
+        self.add_topic(
+            "A.1.19 Non-overlapping Intervals ⭐⭐",
+            "Minimum number of intervals to remove to make non-overlapping.",
+            '''func eraseOverlapIntervals(_ intervals: [[Int]]) -> Int {
+    guard intervals.count > 1 else { return 0 }
+    
+    let sorted = intervals.sorted { $0[1] < $1[1] }
+    var end = sorted[0][1]
+    var count = 0
+    
+    for i in 1..<sorted.count {
+        if sorted[i][0] < end {
+            count += 1
+        } else {
+            end = sorted[i][1]
+        }
+    }
+    
+    return count
+}
+
+// Test case
+let intervals = [[1,2],[2,3],[3,4],[1,3]]
+print(eraseOverlapIntervals(intervals)) // 1''',
+            ["Time: O(n log n)", "Space: O(1)", "Greedy by end time"],
+            "Sort by end time, greedily keep intervals that end earliest."
+        )
+        
+        # Array Problem 20: Jump Game II
+        self.add_topic(
+            "A.1.20 Jump Game II ⭐⭐",
+            "Find minimum number of jumps to reach the last index.",
+            '''func jump(_ nums: [Int]) -> Int {
+    var jumps = 0
+    var currentEnd = 0
+    var farthest = 0
+    
+    for i in 0..<nums.count - 1 {
+        farthest = max(farthest, i + nums[i])
+        
+        if i == currentEnd {
+            jumps += 1
+            currentEnd = farthest
+        }
+    }
+    
+    return jumps
+}
+
+// Test case
+let nums1 = [2, 3, 1, 1, 4] // 2
+let nums2 = [2, 3, 0, 1, 4] // 2
+print(jump(nums1), jump(nums2))''',
+            ["Time: O(n)", "Space: O(1)", "Greedy BFS approach"],
+            "Track current jump range and farthest reachable, increment jumps at range end."
+        )
         
         # String Problems (15 problems)
         self.add_chapter_title("A.2 String Problems (15 Problems)")
         
-        string_problems = [
-            ("A.2.1 Valid Anagram ⭐", "Check if two strings are anagrams"),
-            ("A.2.2 Valid Palindrome ⭐", "Check palindrome ignoring non-alphanumeric"),
-            ("A.2.3 Longest Substring Without Repeating ⭐⭐", "Sliding window technique"),
-            ("A.2.4 Longest Repeating Character Replacement ⭐⭐", "K character replacements"),
-            ("A.2.5 Minimum Window Substring ⭐⭐⭐", "Minimum window containing all chars"),
-            ("A.2.6 Group Anagrams ⭐⭐", "Group strings that are anagrams"),
-            ("A.2.7 Valid Parentheses ⭐", "Check balanced parentheses"),
-            ("A.2.8 Longest Palindromic Substring ⭐⭐", "Find longest palindrome"),
-            ("A.2.9 Palindromic Substrings ⭐⭐", "Count all palindromic substrings"),
-            ("A.2.10 Encode and Decode Strings ⭐⭐", "Design encoding algorithm"),
-            ("A.2.11 String to Integer (atoi) ⭐⭐", "Convert string to integer"),
-            ("A.2.12 Reverse Words in String ⭐⭐", "Reverse words efficiently"),
-            ("A.2.13 Implement strStr() ⭐", "Find needle in haystack"),
-            ("A.2.14 Text Justification ⭐⭐⭐", "Format text to width"),
-            ("A.2.15 Regular Expression Matching ⭐⭐⭐", "Pattern matching with . and *")
-        ]
+        # String Problem 1: Valid Anagram
+        self.add_topic(
+            "A.2.1 Valid Anagram ⭐",
+            "Determine if two strings are anagrams of each other.",
+            '''func isAnagram(_ s: String, _ t: String) -> Bool {
+    guard s.count == t.count else { return false }
+    
+    var charCount: [Character: Int] = [:]
+    
+    for char in s {
+        charCount[char, default: 0] += 1
+    }
+    
+    for char in t {
+        charCount[char, default: 0] -= 1
+        if charCount[char]! < 0 { return false }
+    }
+    
+    return charCount.values.allSatisfy { $0 == 0 }
+}
+
+// Test case
+print(isAnagram("anagram", "nagaram")) // true
+print(isAnagram("rat", "car")) // false''',
+            ["Time: O(n)", "Space: O(1)", "Character frequency counting"],
+            "Count character frequencies and verify they match exactly."
+        )
         
-        for title, description in string_problems:
-            self.add_topic(title, description, 
-                          "// Swift solution with string manipulation techniques", 
-                          ["Time/Space complexity"], 
-                          "String processing algorithm explanation")
+        # String Problem 2: Valid Palindrome
+        self.add_topic(
+            "A.2.2 Valid Palindrome ⭐",
+            "Check if string is palindrome ignoring non-alphanumeric characters.",
+            '''func isPalindrome(_ s: String) -> Bool {
+    let cleaned = s.lowercased().filter { $0.isAlphanumeric }
+    return cleaned == String(cleaned.reversed())
+}
+
+// Alternative two-pointer approach
+func isPalindromeOptimal(_ s: String) -> Bool {
+    let chars = Array(s.lowercased())
+    var left = 0, right = chars.count - 1
+    
+    while left < right {
+        while left < right && !chars[left].isAlphanumeric {
+            left += 1
+        }
+        while left < right && !chars[right].isAlphanumeric {
+            right -= 1
+        }
+        
+        if chars[left] != chars[right] { return false }
+        left += 1
+        right -= 1
+    }
+    
+    return true
+}''',
+            ["Time: O(n)", "Space: O(1)", "Two pointers technique"],
+            "Use two pointers moving inward, skipping non-alphanumeric characters."
+        )
+        
+        # String Problem 3: Longest Substring Without Repeating Characters
+        self.add_topic(
+            "A.2.3 Longest Substring Without Repeating ⭐⭐",
+            "Find length of longest substring without repeating characters.",
+            '''func lengthOfLongestSubstring(_ s: String) -> Int {
+    var charIndex: [Character: Int] = [:]
+    var maxLen = 0
+    var start = 0
+    
+    for (i, char) in s.enumerated() {
+        if let lastIndex = charIndex[char], lastIndex >= start {
+            start = lastIndex + 1
+        }
+        charIndex[char] = i
+        maxLen = max(maxLen, i - start + 1)
+    }
+    
+    return maxLen
+}
+
+// Test cases
+print(lengthOfLongestSubstring("abcabcbb")) // 3
+print(lengthOfLongestSubstring("bbbbb")) // 1
+print(lengthOfLongestSubstring("pwwkew")) // 3''',
+            ["Time: O(n)", "Space: O(min(m,n))", "Sliding window with HashMap"],
+            "Use sliding window with character index tracking to avoid duplicates."
+        )
+        
+        # String Problem 4: Longest Repeating Character Replacement
+        self.add_topic(
+            "A.2.4 Longest Repeating Character Replacement ⭐⭐",
+            "Find longest substring with at most k character replacements.",
+            '''func characterReplacement(_ s: String, _ k: Int) -> Int {
+    var charCount: [Character: Int] = [:]
+    var maxCount = 0
+    var left = 0
+    var maxLen = 0
+    let chars = Array(s)
+    
+    for right in 0..<chars.count {
+        charCount[chars[right], default: 0] += 1
+        maxCount = max(maxCount, charCount[chars[right]]!)
+        
+        if right - left + 1 - maxCount > k {
+            charCount[chars[left]]! -= 1
+            left += 1
+        }
+        
+        maxLen = max(maxLen, right - left + 1)
+    }
+    
+    return maxLen
+}
+
+// Test case
+print(characterReplacement("ABAB", 2)) // 4
+print(characterReplacement("AABABBA", 1)) // 4''',
+            ["Time: O(n)", "Space: O(1)", "Sliding window optimization"],
+            "Expand window while valid, shrink when replacements exceed k."
+        )
+        
+        # String Problem 5: Minimum Window Substring
+        self.add_topic(
+            "A.2.5 Minimum Window Substring ⭐⭐⭐",
+            "Find minimum window in s that contains all characters of t.",
+            '''func minWindow(_ s: String, _ t: String) -> String {
+    guard s.count >= t.count else { return "" }
+    
+    var tCount: [Character: Int] = [:]
+    for char in t {
+        tCount[char, default: 0] += 1
+    }
+    
+    var required = tCount.count
+    var left = 0, right = 0
+    var formed = 0
+    var windowCounts: [Character: Int] = [:]
+    
+    var ans: (Int, Int, Int) = (-1, 0, 0) // length, left, right
+    let sArray = Array(s)
+    
+    while right < sArray.count {
+        let char = sArray[right]
+        windowCounts[char, default: 0] += 1
+        
+        if let count = tCount[char], windowCounts[char] == count {
+            formed += 1
+        }
+        
+        while left <= right && formed == required {
+            if ans.0 == -1 || right - left + 1 < ans.0 {
+                ans = (right - left + 1, left, right)
+            }
+            
+            let leftChar = sArray[left]
+            windowCounts[leftChar]! -= 1
+            if let count = tCount[leftChar], windowCounts[leftChar]! < count {
+                formed -= 1
+            }
+            left += 1
+        }
+        right += 1
+    }
+    
+    return ans.0 == -1 ? "" : String(sArray[ans.1...ans.2])
+}''',
+            ["Time: O(|s| + |t|)", "Space: O(|s| + |t|)", "Sliding window technique"],
+            "Use sliding window to find minimum valid window containing all characters."
+        )
+        
+        # Continue with remaining string problems with full implementations
+        # String Problem 6: Group Anagrams
+        self.add_topic(
+            "A.2.6 Group Anagrams ⭐⭐",
+            "Group strings that are anagrams of each other.",
+            '''func groupAnagrams(_ strs: [String]) -> [[String]] {
+    var anagramMap: [String: [String]] = [:]
+    
+    for str in strs {
+        let sortedStr = String(str.sorted())
+        anagramMap[sortedStr, default: []].append(str)
+    }
+    
+    return Array(anagramMap.values)
+}
+
+// Alternative: Using character frequency as key
+func groupAnagramsFreq(_ strs: [String]) -> [[String]] {
+    var groups: [[Int]: [String]] = [:]
+    
+    for str in strs {
+        var count = Array(repeating: 0, count: 26)
+        for char in str {
+            count[Int(char.asciiValue! - 97)] += 1
+        }
+        groups[count, default: []].append(str)
+    }
+    
+    return Array(groups.values)
+}''',
+            ["Time: O(n*k*log(k))", "Space: O(n*k)", "Sorting or frequency counting"],
+            "Group strings by their sorted characters or frequency signature."
+        )
+        
+        # String Problem 7: Valid Parentheses
+        self.add_topic(
+            "A.2.7 Valid Parentheses ⭐",
+            "Determine if parentheses are valid and properly nested.",
+            '''func isValid(_ s: String) -> Bool {
+    var stack: [Character] = []
+    let pairs: [Character: Character] = [")": "(", "}": "{", "]": "["]
+    
+    for char in s {
+        if let openBracket = pairs[char] {
+            if stack.isEmpty || stack.removeLast() != openBracket {
+                return false
+            }
+        } else {
+            stack.append(char)
+        }
+    }
+    
+    return stack.isEmpty
+}
+
+// Test cases
+print(isValid("()")) // true
+print(isValid("()[]{}")) // true
+print(isValid("(]")) // false''',
+            ["Time: O(n)", "Space: O(n)", "Stack data structure"],
+            "Use stack to track opening brackets and match with closing ones."
+        )
+        
+        # String Problem 8: Longest Palindromic Substring
+        self.add_topic(
+            "A.2.8 Longest Palindromic Substring ⭐⭐",
+            "Find the longest palindromic substring.",
+            '''func longestPalindrome(_ s: String) -> String {
+    guard s.count > 1 else { return s }
+    let chars = Array(s)
+    var start = 0, maxLen = 1
+    
+    func expandAroundCenter(_ left: Int, _ right: Int) -> Int {
+        var l = left, r = right
+        while l >= 0 && r < chars.count && chars[l] == chars[r] {
+            l -= 1
+            r += 1
+        }
+        return r - l - 1
+    }
+    
+    for i in 0..<chars.count {
+        let len1 = expandAroundCenter(i, i)     // odd length
+        let len2 = expandAroundCenter(i, i + 1) // even length
+        let len = max(len1, len2)
+        
+        if len > maxLen {
+            maxLen = len
+            start = i - (len - 1) / 2
+        }
+    }
+    
+    return String(chars[start..<start + maxLen])
+}
+
+// Test case
+print(longestPalindrome("babad")) // "bab" or "aba"''',
+            ["Time: O(n²)", "Space: O(1)", "Expand around centers"],
+            "Check all possible centers and expand outward to find longest palindrome."
+        )
+        
+        # String Problem 9: Palindromic Substrings
+        self.add_topic(
+            "A.2.9 Palindromic Substrings ⭐⭐",
+            "Count the number of palindromic substrings.",
+            '''func countSubstrings(_ s: String) -> Int {
+    let chars = Array(s)
+    var count = 0
+    
+    func expandAroundCenter(_ left: Int, _ right: Int) {
+        var l = left, r = right
+        while l >= 0 && r < chars.count && chars[l] == chars[r] {
+            count += 1
+            l -= 1
+            r += 1
+        }
+    }
+    
+    for i in 0..<chars.count {
+        expandAroundCenter(i, i)     // odd length palindromes
+        expandAroundCenter(i, i + 1) // even length palindromes
+    }
+    
+    return count
+}
+
+// Test case
+print(countSubstrings("abc")) // 3
+print(countSubstrings("aaa")) // 6''',
+            ["Time: O(n²)", "Space: O(1)", "Expand around centers"],
+            "Expand around all possible centers counting palindromes."
+        )
+        
+        # String Problem 10: Encode and Decode Strings
+        self.add_topic(
+            "A.2.10 Encode and Decode Strings ⭐⭐",
+            "Design an algorithm to encode/decode list of strings.",
+            '''class Codec {
+    func encode(_ strs: [String]) -> String {
+        var encoded = ""
+        for str in strs {
+            encoded += "\\(str.count)#\\(str)"
+        }
+        return encoded
+    }
+    
+    func decode(_ s: String) -> [String] {
+        var result: [String] = []
+        var i = 0
+        let chars = Array(s)
+        
+        while i < chars.count {
+            var j = i
+            while chars[j] != "#" {
+                j += 1
+            }
+            let len = Int(String(chars[i..<j]))!
+            result.append(String(chars[j+1..<j+1+len]))
+            i = j + 1 + len
+        }
+        
+        return result
+    }
+}
+
+// Test case
+let codec = Codec()
+let encoded = codec.encode(["hello", "world"])
+print(codec.decode(encoded)) // ["hello", "world"]''',
+            ["Time: O(n)", "Space: O(1)", "Length-prefixed encoding"],
+            "Use length-prefixed format: length#string for safe encoding."
+        )
+        
+        # String Problem 11: String to Integer (atoi)
+        self.add_topic(
+            "A.2.11 String to Integer (atoi) ⭐⭐",
+            "Convert string to 32-bit signed integer.",
+            '''func myAtoi(_ s: String) -> Int {
+    let trimmed = s.trimmingCharacters(in: .whitespaces)
+    guard !trimmed.isEmpty else { return 0 }
+    
+    var result = 0
+    var isNegative = false
+    var startIndex = trimmed.startIndex
+    
+    // Check sign
+    if trimmed.first == "+" || trimmed.first == "-" {
+        isNegative = trimmed.first == "-"
+        startIndex = trimmed.index(after: startIndex)
+    }
+    
+    let intMax = Int32.max
+    let intMin = Int32.min
+    
+    for char in trimmed[startIndex...] {
+        guard char.isNumber else { break }
+        
+        let digit = Int(String(char))!
+        
+        // Check overflow
+        if result > Int(intMax / 10) || 
+           (result == Int(intMax / 10) && digit > Int(intMax % 10)) {
+            return isNegative ? Int(intMin) : Int(intMax)
+        }
+        
+        result = result * 10 + digit
+    }
+    
+    return isNegative ? -result : result
+}
+
+// Test cases
+print(myAtoi("42")) // 42
+print(myAtoi("-42")) // -42
+print(myAtoi("4193 with words")) // 4193''',
+            ["Time: O(n)", "Space: O(1)", "Character parsing with overflow check"],
+            "Parse characters while handling signs, whitespace, and overflow."
+        )
+        
+        # String Problem 12: Reverse Words in String
+        self.add_topic(
+            "A.2.12 Reverse Words in String ⭐⭐",
+            "Reverse the order of words in a string.",
+            '''func reverseWords(_ s: String) -> String {
+    let words = s.split(separator: " ")
+    return words.reversed().joined(separator: " ")
+}
+
+// In-place approach (conceptual - Swift strings are immutable)
+func reverseWordsOptimal(_ s: String) -> String {
+    // Trim and split by multiple spaces
+    let trimmed = s.trimmingCharacters(in: .whitespaces)
+    let words = trimmed.components(separatedBy: .whitespaces)
+                      .filter { !$0.isEmpty }
+    
+    return words.reversed().joined(separator: " ")
+}
+
+// Test case
+let input = "  hello world  "
+print(reverseWords(input)) // "world hello"''',
+            ["Time: O(n)", "Space: O(n)", "Split and reverse"],
+            "Split by spaces, filter empty strings, reverse, and rejoin."
+        )
+        
+        # String Problem 13: Implement strStr()
+        self.add_topic(
+            "A.2.13 Implement strStr() ⭐",
+            "Find the first occurrence of needle in haystack.",
+            '''func strStr(_ haystack: String, _ needle: String) -> Int {
+    guard !needle.isEmpty else { return 0 }
+    guard haystack.count >= needle.count else { return -1 }
+    
+    let hayArray = Array(haystack)
+    let needleArray = Array(needle)
+    
+    for i in 0...hayArray.count - needleArray.count {
+        var match = true
+        for j in 0..<needleArray.count {
+            if hayArray[i + j] != needleArray[j] {
+                match = false
+                break
+            }
+        }
+        if match { return i }
+    }
+    
+    return -1
+}
+
+// KMP approach for optimal performance
+func strStrKMP(_ haystack: String, _ needle: String) -> Int {
+    // KMP implementation would go here
+    return haystack.range(of: needle)?.lowerBound.utf16Offset(in: haystack) ?? -1
+}
+
+// Test case
+print(strStr("hello", "ll")) // 2
+print(strStr("aaaaa", "bba")) // -1''',
+            ["Time: O(n*m) naive, O(n+m) KMP", "Space: O(1)", "String matching"],
+            "Slide needle over haystack checking for matches at each position."
+        )
+        
+        # String Problem 14: Text Justification  
+        self.add_topic(
+            "A.2.14 Text Justification ⭐⭐⭐",
+            "Format text to given width with full justification.",
+            '''func fullJustify(_ words: [String], _ maxWidth: Int) -> [String] {
+    var result: [String] = []
+    var i = 0
+    
+    while i < words.count {
+        var currentLine: [String] = [words[i]]
+        var currentLength = words[i].count
+        i += 1
+        
+        // Pack as many words as possible
+        while i < words.count && 
+              currentLength + 1 + words[i].count <= maxWidth {
+            currentLine.append(words[i])
+            currentLength += 1 + words[i].count
+            i += 1
+        }
+        
+        // Justify the line
+        if i == words.count || currentLine.count == 1 {
+            // Last line or single word - left justify
+            let line = currentLine.joined(separator: " ")
+            let padding = String(repeating: " ", count: maxWidth - line.count)
+            result.append(line + padding)
+        } else {
+            // Middle lines - full justify
+            let totalSpaces = maxWidth - currentLine.reduce(0) { $0 + $1.count }
+            let gaps = currentLine.count - 1
+            let spacesPerGap = totalSpaces / gaps
+            let extraSpaces = totalSpaces % gaps
+            
+            var line = ""
+            for j in 0..<currentLine.count {
+                line += currentLine[j]
+                if j < gaps {
+                    line += String(repeating: " ", count: spacesPerGap)
+                    if j < extraSpaces {
+                        line += " "
+                    }
+                }
+            }
+            result.append(line)
+        }
+    }
+    
+    return result
+}''',
+            ["Time: O(n)", "Space: O(1)", "Greedy packing with justification"],
+            "Pack words into lines, then distribute spaces evenly for justification."
+        )
+        
+        # String Problem 15: Regular Expression Matching
+        self.add_topic(
+            "A.2.15 Regular Expression Matching ⭐⭐⭐",
+            "Implement regular expression matching with '.' and '*'.",
+            '''func isMatch(_ s: String, _ p: String) -> Bool {
+    let sArray = Array(s)
+    let pArray = Array(p)
+    var memo: [[Int]] = Array(repeating: Array(repeating: -1, count: pArray.count + 1), 
+                               count: sArray.count + 1)
+    
+    func dp(_ i: Int, _ j: Int) -> Bool {
+        if memo[i][j] != -1 {
+            return memo[i][j] == 1
+        }
+        
+        var result: Bool
+        
+        if j == pArray.count {
+            result = i == sArray.count
+        } else {
+            let firstMatch = i < sArray.count && 
+                           (pArray[j] == "." || sArray[i] == pArray[j])
+            
+            if j + 1 < pArray.count && pArray[j + 1] == "*" {
+                result = dp(i, j + 2) || (firstMatch && dp(i + 1, j))
+            } else {
+                result = firstMatch && dp(i + 1, j + 1)
+            }
+        }
+        
+        memo[i][j] = result ? 1 : 0
+        return result
+    }
+    
+    return dp(0, 0)
+}
+
+// Test cases
+print(isMatch("aa", "a")) // false
+print(isMatch("aa", "a*")) // true
+print(isMatch("ab", ".*")) // true''',
+            ["Time: O(s*p)", "Space: O(s*p)", "Dynamic programming with memoization"],
+            "Use recursion with memoization to handle . and * pattern matching."
+        )
         
         # Linked List Problems (12 problems)
         self.add_chapter_title("A.3 Linked List Problems (12 Problems)")
@@ -4988,26 +5754,464 @@ class ListNode {
         self.story.append(listnode_para)
         self.story.append(Spacer(1, 12))
         
-        linkedlist_problems = [
-            ("A.3.1 Reverse Linked List ⭐", "Reverse list iteratively and recursively"),
-            ("A.3.2 Merge Two Sorted Lists ⭐", "Merge two sorted lists"),
-            ("A.3.3 Remove Nth Node From End ⭐⭐", "One-pass solution"),
-            ("A.3.4 Linked List Cycle ⭐", "Floyd's cycle detection"),
-            ("A.3.5 Linked List Cycle II ⭐⭐", "Find cycle start"),
-            ("A.3.6 Merge k Sorted Lists ⭐⭐⭐", "Divide and conquer approach"),
-            ("A.3.7 Remove Duplicates from Sorted List ⭐", "Remove duplicates"),
-            ("A.3.8 Intersection of Two Linked Lists ⭐", "Find intersection node"),
-            ("A.3.9 Palindrome Linked List ⭐", "Check if list is palindrome"),
-            ("A.3.10 Add Two Numbers ⭐⭐", "Add numbers as linked lists"),
-            ("A.3.11 Copy List with Random Pointer ⭐⭐", "Deep copy complex list"),
-            ("A.3.12 LRU Cache ⭐⭐⭐", "Implement LRU cache")
-        ]
+        # Linked List Problem 1: Reverse Linked List
+        self.add_topic(
+            "A.3.1 Reverse Linked List ⭐",
+            "Reverse a singly linked list iteratively and recursively.",
+            '''// Iterative approach
+func reverseList(_ head: ListNode?) -> ListNode? {
+    var prev: ListNode? = nil
+    var current = head
+    
+    while current != nil {
+        let next = current?.next
+        current?.next = prev
+        prev = current
+        current = next
+    }
+    
+    return prev
+}
+
+// Recursive approach
+func reverseListRecursive(_ head: ListNode?) -> ListNode? {
+    guard let head = head, let next = head.next else {
+        return head
+    }
+    
+    let newHead = reverseListRecursive(next)
+    next.next = head
+    head.next = nil
+    
+    return newHead
+}''',
+            ["Time: O(n)", "Space: O(1) iterative, O(n) recursive", "Two pointers"],
+            "Use three pointers to reverse links, or recursion with stack."
+        )
         
-        for title, description in linkedlist_problems:
-            self.add_topic(title, description, 
-                          "// Swift linked list solution with optimal approach", 
-                          ["Time/Space complexity"], 
-                          "Linked list algorithm explanation")
+        # Linked List Problem 2: Merge Two Sorted Lists
+        self.add_topic(
+            "A.3.2 Merge Two Sorted Lists ⭐",
+            "Merge two sorted linked lists into one sorted list.",
+            '''func mergeTwoLists(_ list1: ListNode?, _ list2: ListNode?) -> ListNode? {
+    let dummy = ListNode(0)
+    var current = dummy
+    var l1 = list1
+    var l2 = list2
+    
+    while l1 != nil && l2 != nil {
+        if l1!.val <= l2!.val {
+            current.next = l1
+            l1 = l1!.next
+        } else {
+            current.next = l2
+            l2 = l2!.next
+        }
+        current = current.next!
+    }
+    
+    // Attach remaining nodes
+    current.next = l1 ?? l2
+    
+    return dummy.next
+}
+
+// Recursive approach
+func mergeTwoListsRecursive(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
+    guard let l1 = l1 else { return l2 }
+    guard let l2 = l2 else { return l1 }
+    
+    if l1.val <= l2.val {
+        l1.next = mergeTwoListsRecursive(l1.next, l2)
+        return l1
+    } else {
+        l2.next = mergeTwoListsRecursive(l1, l2.next)
+        return l2
+    }
+}''',
+            ["Time: O(n + m)", "Space: O(1) iterative, O(n+m) recursive", "Two pointers"],
+            "Compare values at each step and attach the smaller node."
+        )
+        
+        # Linked List Problem 3: Remove Nth Node From End
+        self.add_topic(
+            "A.3.3 Remove Nth Node From End ⭐⭐",
+            "Remove the nth node from the end in one pass.",
+            '''func removeNthFromEnd(_ head: ListNode?, _ n: Int) -> ListNode? {
+    let dummy = ListNode(0)
+    dummy.next = head
+    var first: ListNode? = dummy
+    var second: ListNode? = dummy
+    
+    // Move first pointer n+1 steps ahead
+    for _ in 0...n {
+        first = first?.next
+    }
+    
+    // Move both pointers until first reaches end
+    while first != nil {
+        first = first?.next
+        second = second?.next
+    }
+    
+    // Remove the nth node
+    second?.next = second?.next?.next
+    
+    return dummy.next
+}''',
+            ["Time: O(n)", "Space: O(1)", "Two pointers technique"],
+            "Use two pointers with n+1 gap to find the node before target."
+        )
+        
+        # Linked List Problem 4: Linked List Cycle
+        self.add_topic(
+            "A.3.4 Linked List Cycle ⭐",
+            "Detect if linked list has a cycle using Floyd's algorithm.",
+            '''func hasCycle(_ head: ListNode?) -> Bool {
+    var slow = head
+    var fast = head
+    
+    while fast != nil && fast?.next != nil {
+        slow = slow?.next
+        fast = fast?.next?.next
+        
+        if slow === fast {
+            return true
+        }
+    }
+    
+    return false
+}
+
+// Alternative using Set (less efficient)
+func hasCycleSet(_ head: ListNode?) -> Bool {
+    var visited = Set<ObjectIdentifier>()
+    var current = head
+    
+    while let node = current {
+        let id = ObjectIdentifier(node)
+        if visited.contains(id) {
+            return true
+        }
+        visited.insert(id)
+        current = node.next
+    }
+    
+    return false
+}''',
+            ["Time: O(n)", "Space: O(1)", "Floyd's tortoise and hare"],
+            "Fast pointer moves twice as fast; they meet if cycle exists."
+        )
+        
+        # Linked List Problem 5: Linked List Cycle II
+        self.add_topic(
+            "A.3.5 Linked List Cycle II ⭐⭐",
+            "Find the node where the cycle begins.",
+            '''func detectCycle(_ head: ListNode?) -> ListNode? {
+    var slow = head
+    var fast = head
+    
+    // Phase 1: Detect if cycle exists
+    while fast != nil && fast?.next != nil {
+        slow = slow?.next
+        fast = fast?.next?.next
+        
+        if slow === fast {
+            // Phase 2: Find cycle start
+            var start = head
+            while start !== slow {
+                start = start?.next
+                slow = slow?.next
+            }
+            return start
+        }
+    }
+    
+    return nil
+}''',
+            ["Time: O(n)", "Space: O(1)", "Floyd's algorithm extended"],
+            "After detecting cycle, move one pointer to head and advance both one step."
+        )
+        
+        # Linked List Problem 6: Merge k Sorted Lists
+        self.add_topic(
+            "A.3.6 Merge k Sorted Lists ⭐⭐⭐",
+            "Merge k sorted linked lists using divide and conquer.",
+            '''func mergeKLists(_ lists: [ListNode?]) -> ListNode? {
+    guard !lists.isEmpty else { return nil }
+    
+    var lists = lists.filter { $0 != nil }
+    
+    while lists.count > 1 {
+        var mergedLists: [ListNode?] = []
+        
+        for i in stride(from: 0, to: lists.count, by: 2) {
+            let l1 = lists[i]
+            let l2 = i + 1 < lists.count ? lists[i + 1] : nil
+            mergedLists.append(mergeTwoLists(l1, l2))
+        }
+        
+        lists = mergedLists
+    }
+    
+    return lists.first ?? nil
+}
+
+// Helper function from problem A.3.2
+func mergeTwoLists(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
+    let dummy = ListNode(0)
+    var current = dummy
+    var list1 = l1, list2 = l2
+    
+    while list1 != nil && list2 != nil {
+        if list1!.val <= list2!.val {
+            current.next = list1
+            list1 = list1!.next
+        } else {
+            current.next = list2
+            list2 = list2!.next
+        }
+        current = current.next!
+    }
+    
+    current.next = list1 ?? list2
+    return dummy.next
+}''',
+            ["Time: O(n log k)", "Space: O(1)", "Divide and conquer"],
+            "Merge lists pairwise until only one remains."
+        )
+        
+        # Continue with remaining linked list problems
+        self.add_topic(
+            "A.3.7 Remove Duplicates from Sorted List ⭐",
+            "Remove duplicates from a sorted linked list.",
+            '''func deleteDuplicates(_ head: ListNode?) -> ListNode? {
+    var current = head
+    
+    while current != nil && current?.next != nil {
+        if current!.val == current!.next!.val {
+            current?.next = current?.next?.next
+        } else {
+            current = current?.next
+        }
+    }
+    
+    return head
+}''',
+            ["Time: O(n)", "Space: O(1)", "Single pass"],
+            "Skip duplicate nodes by updating next pointers."
+        )
+        
+        self.add_topic(
+            "A.3.8 Intersection of Two Linked Lists ⭐",
+            "Find the node where two linked lists intersect.",
+            '''func getIntersectionNode(_ headA: ListNode?, _ headB: ListNode?) -> ListNode? {
+    var pointerA = headA
+    var pointerB = headB
+    
+    while pointerA !== pointerB {
+        pointerA = (pointerA == nil) ? headB : pointerA?.next
+        pointerB = (pointerB == nil) ? headA : pointerB?.next
+    }
+    
+    return pointerA
+}''',
+            ["Time: O(n + m)", "Space: O(1)", "Two pointers with switching"],
+            "Switch to other list when reaching end; they meet at intersection."
+        )
+        
+        # Continue with remaining problems...
+        self.add_topic(
+            "A.3.9 Palindrome Linked List ⭐",
+            "Check if linked list forms a palindrome.",
+            '''func isPalindrome(_ head: ListNode?) -> Bool {
+    guard let head = head else { return true }
+    
+    // Find middle using slow/fast pointers
+    var slow = head
+    var fast = head
+    
+    while fast.next != nil && fast.next?.next != nil {
+        slow = slow.next!
+        fast = fast.next!.next!
+    }
+    
+    // Reverse second half
+    var secondHalf = reverseList(slow.next)
+    var firstHalf: ListNode? = head
+    
+    // Compare both halves
+    while secondHalf != nil {
+        if firstHalf!.val != secondHalf!.val {
+            return false
+        }
+        firstHalf = firstHalf?.next
+        secondHalf = secondHalf?.next
+    }
+    
+    return true
+}
+
+func reverseList(_ head: ListNode?) -> ListNode? {
+    var prev: ListNode? = nil
+    var current = head
+    
+    while current != nil {
+        let next = current?.next
+        current?.next = prev
+        prev = current
+        current = next
+    }
+    
+    return prev
+}''',
+            ["Time: O(n)", "Space: O(1)", "Find middle + reverse + compare"],
+            "Find middle, reverse second half, compare with first half."
+        )
+        
+        self.add_topic(
+            "A.3.10 Add Two Numbers ⭐⭐",
+            "Add two numbers represented as linked lists.",
+            '''func addTwoNumbers(_ l1: ListNode?, _ l2: ListNode?) -> ListNode? {
+    let dummy = ListNode(0)
+    var current = dummy
+    var carry = 0
+    var p1 = l1, p2 = l2
+    
+    while p1 != nil || p2 != nil || carry > 0 {
+        let sum = (p1?.val ?? 0) + (p2?.val ?? 0) + carry
+        carry = sum / 10
+        current.next = ListNode(sum % 10)
+        current = current.next!
+        
+        p1 = p1?.next
+        p2 = p2?.next
+    }
+    
+    return dummy.next
+}''',
+            ["Time: O(max(n,m))", "Space: O(max(n,m))", "Digit by digit addition"],
+            "Add digits with carry, handle different lengths and final carry."
+        )
+        
+        self.add_topic(
+            "A.3.11 Copy List with Random Pointer ⭐⭐",
+            "Deep copy a linked list with random pointers.",
+            '''class Node {
+    var val: Int
+    var next: Node?
+    var random: Node?
+    
+    init(_ val: Int) {
+        self.val = val
+        self.next = nil
+        self.random = nil
+    }
+}
+
+func copyRandomList(_ head: Node?) -> Node? {
+    guard let head = head else { return nil }
+    
+    var nodeMap: [Node: Node] = [:]
+    var current: Node? = head
+    
+    // First pass: Create all nodes
+    while let node = current {
+        nodeMap[node] = Node(node.val)
+        current = node.next
+    }
+    
+    // Second pass: Set next and random pointers
+    current = head
+    while let node = current {
+        nodeMap[node]?.next = nodeMap[node.next ?? Node(0)]
+        nodeMap[node]?.random = nodeMap[node.random ?? Node(0)]
+        current = node.next
+    }
+    
+    return nodeMap[head]
+}''',
+            ["Time: O(n)", "Space: O(n)", "HashMap for node mapping"],
+            "Use hashmap to map original nodes to copies, then set pointers."
+        )
+        
+        self.add_topic(
+            "A.3.12 LRU Cache ⭐⭐⭐",
+            "Implement Least Recently Used (LRU) cache.",
+            '''class LRUCache {
+    class Node {
+        var key: Int
+        var value: Int
+        var prev: Node?
+        var next: Node?
+        
+        init(_ key: Int, _ value: Int) {
+            self.key = key
+            self.value = value
+        }
+    }
+    
+    private var capacity: Int
+    private var cache: [Int: Node] = [:]
+    private let head = Node(0, 0)
+    private let tail = Node(0, 0)
+    
+    init(_ capacity: Int) {
+        self.capacity = capacity
+        head.next = tail
+        tail.prev = head
+    }
+    
+    func get(_ key: Int) -> Int {
+        if let node = cache[key] {
+            moveToHead(node)
+            return node.value
+        }
+        return -1
+    }
+    
+    func put(_ key: Int, _ value: Int) {
+        if let node = cache[key] {
+            node.value = value
+            moveToHead(node)
+        } else {
+            let newNode = Node(key, value)
+            cache[key] = newNode
+            addToHead(newNode)
+            
+            if cache.count > capacity {
+                let removed = removeTail()
+                cache.removeValue(forKey: removed.key)
+            }
+        }
+    }
+    
+    private func addToHead(_ node: Node) {
+        node.prev = head
+        node.next = head.next
+        head.next?.prev = node
+        head.next = node
+    }
+    
+    private func removeNode(_ node: Node) {
+        node.prev?.next = node.next
+        node.next?.prev = node.prev
+    }
+    
+    private func moveToHead(_ node: Node) {
+        removeNode(node)
+        addToHead(node)
+    }
+    
+    private func removeTail() -> Node {
+        let last = tail.prev!
+        removeNode(last)
+        return last
+    }
+}''',
+            ["Time: O(1) for get/put", "Space: O(capacity)", "HashMap + Doubly Linked List"],
+            "Combine hashmap for O(1) access with doubly linked list for O(1) updates."
+        )
         
         # Binary Tree Problems (15 problems)
         self.add_chapter_title("A.4 Binary Tree Problems (15 Problems)")
@@ -5029,138 +6233,2287 @@ class TreeNode {
         self.story.append(treenode_para)
         self.story.append(Spacer(1, 12))
         
-        tree_problems = [
-            ("A.4.1 Maximum Depth of Binary Tree ⭐", "DFS recursive solution"),
-            ("A.4.2 Same Tree ⭐", "Compare two trees"),
-            ("A.4.3 Invert Binary Tree ⭐", "Mirror binary tree"),
-            ("A.4.4 Binary Tree Level Order Traversal ⭐⭐", "BFS traversal"),
-            ("A.4.5 Subtree of Another Tree ⭐⭐", "Check if subtree exists"),
-            ("A.4.6 Lowest Common Ancestor ⭐⭐", "Find LCA in BST"),
-            ("A.4.7 Binary Tree Right Side View ⭐⭐", "Right side view"),
-            ("A.4.8 Count Good Nodes ⭐⭐", "Count good nodes in tree"),
-            ("A.4.9 Validate Binary Search Tree ⭐⭐", "Check valid BST"),
-            ("A.4.10 Kth Smallest in BST ⭐⭐", "Inorder traversal approach"),
-            ("A.4.11 Construct Tree from Traversals ⭐⭐", "Build from preorder/inorder"),
-            ("A.4.12 Binary Tree Max Path Sum ⭐⭐⭐", "Maximum path sum"),
-            ("A.4.13 Serialize and Deserialize Tree ⭐⭐⭐", "Convert tree to/from string"),
-            ("A.4.14 Word Search II ⭐⭐⭐", "Trie + DFS backtracking"),
-            ("A.4.15 Balanced Binary Tree ⭐", "Check height balanced")
-        ]
+        # Binary Tree Problem 1: Maximum Depth
+        self.add_topic(
+            "A.4.1 Maximum Depth of Binary Tree ⭐",
+            "Find the maximum depth (height) of a binary tree.",
+            '''func maxDepth(_ root: TreeNode?) -> Int {
+    guard let root = root else { return 0 }
+    return 1 + max(maxDepth(root.left), maxDepth(root.right))
+}
+
+// Iterative BFS approach
+func maxDepthIterative(_ root: TreeNode?) -> Int {
+    guard let root = root else { return 0 }
+    
+    var queue: [TreeNode] = [root]
+    var depth = 0
+    
+    while !queue.isEmpty {
+        depth += 1
+        let levelSize = queue.count
         
-        for title, description in tree_problems:
-            self.add_topic(title, description, 
-                          "// Swift binary tree solution with DFS/BFS", 
-                          ["Time/Space complexity"], 
-                          "Tree algorithm explanation")
+        for _ in 0..<levelSize {
+            let node = queue.removeFirst()
+            if let left = node.left { queue.append(left) }
+            if let right = node.right { queue.append(right) }
+        }
+    }
+    
+    return depth
+}''',
+            ["Time: O(n)", "Space: O(h) recursive, O(w) iterative", "DFS/BFS"],
+            "Use recursion or level-order traversal to count maximum depth."
+        )
+        
+        # Binary Tree Problem 2: Same Tree
+        self.add_topic(
+            "A.4.2 Same Tree ⭐",
+            "Determine if two binary trees are identical.",
+            '''func isSameTree(_ p: TreeNode?, _ q: TreeNode?) -> Bool {
+    if p == nil && q == nil { return true }
+    if p == nil || q == nil { return false }
+    
+    return p!.val == q!.val && 
+           isSameTree(p!.left, q!.left) && 
+           isSameTree(p!.right, q!.right)
+}
+
+// Iterative approach using stacks
+func isSameTreeIterative(_ p: TreeNode?, _ q: TreeNode?) -> Bool {
+    var stack1: [TreeNode?] = [p]
+    var stack2: [TreeNode?] = [q]
+    
+    while !stack1.isEmpty && !stack2.isEmpty {
+        let node1 = stack1.removeLast()
+        let node2 = stack2.removeLast()
+        
+        if node1 == nil && node2 == nil { continue }
+        if node1 == nil || node2 == nil { return false }
+        if node1!.val != node2!.val { return false }
+        
+        stack1.append(contentsOf: [node1!.left, node1!.right])
+        stack2.append(contentsOf: [node2!.left, node2!.right])
+    }
+    
+    return stack1.isEmpty && stack2.isEmpty
+}''',
+            ["Time: O(n)", "Space: O(h)", "DFS comparison"],
+            "Recursively compare structure and values of both trees."
+        )
+        
+        # Binary Tree Problem 3: Invert Binary Tree
+        self.add_topic(
+            "A.4.3 Invert Binary Tree ⭐",
+            "Invert (mirror) a binary tree.",
+            '''func invertTree(_ root: TreeNode?) -> TreeNode? {
+    guard let root = root else { return nil }
+    
+    let temp = root.left
+    root.left = invertTree(root.right)
+    root.right = invertTree(temp)
+    
+    return root
+}
+
+// Iterative approach using queue
+func invertTreeIterative(_ root: TreeNode?) -> TreeNode? {
+    guard let root = root else { return nil }
+    
+    var queue: [TreeNode] = [root]
+    
+    while !queue.isEmpty {
+        let node = queue.removeFirst()
+        
+        // Swap children
+        let temp = node.left
+        node.left = node.right
+        node.right = temp
+        
+        if let left = node.left { queue.append(left) }
+        if let right = node.right { queue.append(right) }
+    }
+    
+    return root
+}''',
+            ["Time: O(n)", "Space: O(h)", "DFS with swapping"],
+            "Swap left and right children recursively or iteratively."
+        )
+        
+        # Binary Tree Problem 4: Level Order Traversal
+        self.add_topic(
+            "A.4.4 Binary Tree Level Order Traversal ⭐⭐",
+            "Return level order traversal as array of arrays.",
+            '''func levelOrder(_ root: TreeNode?) -> [[Int]] {
+    guard let root = root else { return [] }
+    
+    var result: [[Int]] = []
+    var queue: [TreeNode] = [root]
+    
+    while !queue.isEmpty {
+        let levelSize = queue.count
+        var currentLevel: [Int] = []
+        
+        for _ in 0..<levelSize {
+            let node = queue.removeFirst()
+            currentLevel.append(node.val)
+            
+            if let left = node.left { queue.append(left) }
+            if let right = node.right { queue.append(right) }
+        }
+        
+        result.append(currentLevel)
+    }
+    
+    return result
+}''',
+            ["Time: O(n)", "Space: O(w)", "BFS level by level"],
+            "Use queue to process nodes level by level, collecting values."
+        )
+        
+        # Binary Tree Problem 5: Subtree of Another Tree
+        self.add_topic(
+            "A.4.5 Subtree of Another Tree ⭐⭐",
+            "Check if subRoot is a subtree of root.",
+            '''func isSubtree(_ root: TreeNode?, _ subRoot: TreeNode?) -> Bool {
+    guard let root = root else { return subRoot == nil }
+    
+    return isSameTree(root, subRoot) || 
+           isSubtree(root.left, subRoot) || 
+           isSubtree(root.right, subRoot)
+}
+
+func isSameTree(_ p: TreeNode?, _ q: TreeNode?) -> Bool {
+    if p == nil && q == nil { return true }
+    if p == nil || q == nil { return false }
+    
+    return p!.val == q!.val && 
+           isSameTree(p!.left, q!.left) && 
+           isSameTree(p!.right, q!.right)
+}''',
+            ["Time: O(m*n)", "Space: O(h)", "DFS with tree comparison"],
+            "Check if subtree matches at each node using isSameTree helper."
+        )
+        
+        # Continue with remaining binary tree problems
+        self.add_topic(
+            "A.4.6 Lowest Common Ancestor ⭐⭐",
+            "Find LCA of two nodes in BST.",
+            '''func lowestCommonAncestor(_ root: TreeNode?, _ p: TreeNode?, _ q: TreeNode?) -> TreeNode? {
+    guard let root = root, let p = p, let q = q else { return nil }
+    
+    // If both nodes are in left subtree
+    if p.val < root.val && q.val < root.val {
+        return lowestCommonAncestor(root.left, p, q)
+    }
+    
+    // If both nodes are in right subtree
+    if p.val > root.val && q.val > root.val {
+        return lowestCommonAncestor(root.right, p, q)
+    }
+    
+    // If nodes are on different sides or one equals root
+    return root
+}
+
+// Iterative approach
+func lowestCommonAncestorIterative(_ root: TreeNode?, _ p: TreeNode?, _ q: TreeNode?) -> TreeNode? {
+    guard let p = p, let q = q else { return nil }
+    var current = root
+    
+    while let node = current {
+        if p.val < node.val && q.val < node.val {
+            current = node.left
+        } else if p.val > node.val && q.val > node.val {
+            current = node.right
+        } else {
+            return node
+        }
+    }
+    
+    return nil
+}''',
+            ["Time: O(h)", "Space: O(h) recursive, O(1) iterative", "BST property"],
+            "Use BST property to navigate left/right based on values."
+        )
+        
+        # Binary Tree Problem 7: Right Side View
+        self.add_topic(
+            "A.4.7 Binary Tree Right Side View ⭐⭐",
+            "Return values of nodes you can see from the right side.",
+            '''func rightSideView(_ root: TreeNode?) -> [Int] {
+    guard let root = root else { return [] }
+    
+    var result: [Int] = []
+    var queue: [TreeNode] = [root]
+    
+    while !queue.isEmpty {
+        let levelSize = queue.count
+        
+        for i in 0..<levelSize {
+            let node = queue.removeFirst()
+            
+            // Add the rightmost node of each level
+            if i == levelSize - 1 {
+                result.append(node.val)
+            }
+            
+            if let left = node.left { queue.append(left) }
+            if let right = node.right { queue.append(right) }
+        }
+    }
+    
+    return result
+}''',
+            ["Time: O(n)", "Space: O(w)", "BFS level order"],
+            "Use BFS and collect the rightmost node value from each level."
+        )
+        
+        # Binary Tree Problem 8: Count Good Nodes
+        self.add_topic(
+            "A.4.8 Count Good Nodes ⭐⭐",
+            "Count nodes where path from root contains no larger values.",
+            '''func goodNodes(_ root: TreeNode?) -> Int {
+    return dfs(root, Int.min)
+}
+
+func dfs(_ node: TreeNode?, _ maxVal: Int) -> Int {
+    guard let node = node else { return 0 }
+    
+    var count = 0
+    if node.val >= maxVal {
+        count = 1
+    }
+    
+    let newMax = max(maxVal, node.val)
+    count += dfs(node.left, newMax)
+    count += dfs(node.right, newMax)
+    
+    return count
+}''',
+            ["Time: O(n)", "Space: O(h)", "DFS with max tracking"],
+            "Use DFS to track maximum value in path and count good nodes."
+        )
+        
+        # Binary Tree Problem 9: Validate BST
+        self.add_topic(
+            "A.4.9 Validate Binary Search Tree ⭐⭐",
+            "Determine if tree is a valid binary search tree.",
+            '''func isValidBST(_ root: TreeNode?) -> Bool {
+    return validate(root, nil, nil)
+}
+
+func validate(_ node: TreeNode?, _ min: Int?, _ max: Int?) -> Bool {
+    guard let node = node else { return true }
+    
+    if let min = min, node.val <= min { return false }
+    if let max = max, node.val >= max { return false }
+    
+    return validate(node.left, min, node.val) && 
+           validate(node.right, node.val, max)
+}
+
+// Alternative inorder approach
+func isValidBSTInorder(_ root: TreeNode?) -> Bool {
+    var prev: Int? = nil
+    
+    func inorder(_ node: TreeNode?) -> Bool {
+        guard let node = node else { return true }
+        
+        if !inorder(node.left) { return false }
+        
+        if let prevVal = prev, node.val <= prevVal {
+            return false
+        }
+        prev = node.val
+        
+        return inorder(node.right)
+    }
+    
+    return inorder(root)
+}''',
+            ["Time: O(n)", "Space: O(h)", "Bounds checking or inorder"],
+            "Use bounds checking or inorder traversal to validate BST property."
+        )
+        
+        # Binary Tree Problem 10: Kth Smallest in BST
+        self.add_topic(
+            "A.4.10 Kth Smallest in BST ⭐⭐",
+            "Find the kth smallest value in BST.",
+            '''func kthSmallest(_ root: TreeNode?, _ k: Int) -> Int {
+    var count = 0
+    var result = 0
+    
+    func inorder(_ node: TreeNode?) {
+        guard let node = node, count < k else { return }
+        
+        inorder(node.left)
+        
+        count += 1
+        if count == k {
+            result = node.val
+            return
+        }
+        
+        inorder(node.right)
+    }
+    
+    inorder(root)
+    return result
+}
+
+// Iterative approach
+func kthSmallestIterative(_ root: TreeNode?, _ k: Int) -> Int {
+    var stack: [TreeNode] = []
+    var current = root
+    var count = 0
+    
+    while current != nil || !stack.isEmpty {
+        while let node = current {
+            stack.append(node)
+            current = node.left
+        }
+        
+        current = stack.removeLast()
+        count += 1
+        
+        if count == k {
+            return current!.val
+        }
+        
+        current = current?.right
+    }
+    
+    return -1 // Should never reach here if k is valid
+}''',
+            ["Time: O(h + k)", "Space: O(h)", "Inorder traversal"],
+            "Use inorder traversal to visit nodes in sorted order, return kth."
+        )
+        
+        # Continue with remaining problems...
+        self.add_topic(
+            "A.4.11 Construct Tree from Traversals ⭐⭐",
+            "Build binary tree from preorder and inorder traversal.",
+            '''func buildTree(_ preorder: [Int], _ inorder: [Int]) -> TreeNode? {
+    guard !preorder.isEmpty && !inorder.isEmpty else { return nil }
+    
+    let root = TreeNode(preorder[0])
+    guard let mid = inorder.firstIndex(of: preorder[0]) else { return root }
+    
+    root.left = buildTree(Array(preorder[1..<mid+1]), Array(inorder[0..<mid]))
+    root.right = buildTree(Array(preorder[mid+1..<preorder.count]), Array(inorder[mid+1..<inorder.count]))
+    
+    return root
+}''',
+            ["Time: O(n)", "Space: O(n)", "Recursive construction"],
+            "Use preorder for root, inorder to split left/right subtrees."
+        )
+        
+        # Binary Tree Problem 12: Max Path Sum
+        self.add_topic(
+            "A.4.12 Binary Tree Max Path Sum ⭐⭐⭐",
+            "Find the maximum path sum in binary tree.",
+            '''func maxPathSum(_ root: TreeNode?) -> Int {
+    var maxSum = Int.min
+    
+    func maxGain(_ node: TreeNode?) -> Int {
+        guard let node = node else { return 0 }
+        
+        let leftGain = max(maxGain(node.left), 0)
+        let rightGain = max(maxGain(node.right), 0)
+        
+        let currentPathSum = node.val + leftGain + rightGain
+        maxSum = max(maxSum, currentPathSum)
+        
+        return node.val + max(leftGain, rightGain)
+    }
+    
+    _ = maxGain(root)
+    return maxSum
+}''',
+            ["Time: O(n)", "Space: O(h)", "DFS with global maximum"],
+            "Calculate max gain from each subtree, track global maximum path sum."
+        )
+        
+        # Binary Tree Problem 13: Serialize and Deserialize
+        self.add_topic(
+            "A.4.13 Serialize and Deserialize Tree ⭐⭐⭐",
+            "Encode tree to string and decode string to tree.",
+            '''class Codec {
+    func serialize(_ root: TreeNode?) -> String {
+        var result: [String] = []
+        
+        func preorder(_ node: TreeNode?) {
+            if let node = node {
+                result.append(String(node.val))
+                preorder(node.left)
+                preorder(node.right)
+            } else {
+                result.append("null")
+            }
+        }
+        
+        preorder(root)
+        return result.joined(separator: ",")
+    }
+    
+    func deserialize(_ data: String) -> TreeNode? {
+        let values = data.split(separator: ",").map { String($0) }
+        var index = 0
+        
+        func buildTree() -> TreeNode? {
+            guard index < values.count else { return nil }
+            
+            let val = values[index]
+            index += 1
+            
+            if val == "null" { return nil }
+            
+            let node = TreeNode(Int(val)!)
+            node.left = buildTree()
+            node.right = buildTree()
+            
+            return node
+        }
+        
+        return buildTree()
+    }
+}''',
+            ["Time: O(n)", "Space: O(n)", "Preorder with null markers"],
+            "Use preorder traversal with null markers for serialization."
+        )
+        
+        # Binary Tree Problem 14: Word Search II
+        self.add_topic(
+            "A.4.14 Word Search II ⭐⭐⭐",
+            "Find all words from word list that can be constructed on board.",
+            '''class TrieNode {
+    var children: [Character: TrieNode] = [:]
+    var word: String? = nil
+}
+
+func findWords(_ board: [[Character]], _ words: [String]) -> [String] {
+    // Build Trie
+    let root = TrieNode()
+    for word in words {
+        var node = root
+        for char in word {
+            if node.children[char] == nil {
+                node.children[char] = TrieNode()
+            }
+            node = node.children[char]!
+        }
+        node.word = word
+    }
+    
+    var result: Set<String> = []
+    var board = board
+    
+    func dfs(_ row: Int, _ col: Int, _ node: TrieNode) {
+        guard row >= 0 && row < board.count && 
+              col >= 0 && col < board[0].count else { return }
+        
+        let char = board[row][col]
+        guard char != "#", let nextNode = node.children[char] else { return }
+        
+        if let word = nextNode.word {
+            result.insert(word)
+        }
+        
+        board[row][col] = "#" // mark visited
+        
+        dfs(row + 1, col, nextNode)
+        dfs(row - 1, col, nextNode)
+        dfs(row, col + 1, nextNode)
+        dfs(row, col - 1, nextNode)
+        
+        board[row][col] = char // backtrack
+    }
+    
+    for i in 0..<board.count {
+        for j in 0..<board[0].count {
+            dfs(i, j, root)
+        }
+    }
+    
+    return Array(result)
+}''',
+            ["Time: O(m*n*4^L)", "Space: O(N)", "Trie + DFS backtracking"],
+            "Build Trie from words, DFS on board with backtracking."
+        )
+        
+        # Binary Tree Problem 15: Balanced Binary Tree
+        self.add_topic(
+            "A.4.15 Balanced Binary Tree ⭐",
+            "Check if binary tree is height-balanced.",
+            '''func isBalanced(_ root: TreeNode?) -> Bool {
+    return checkHeight(root) != -1
+}
+
+func checkHeight(_ node: TreeNode?) -> Int {
+    guard let node = node else { return 0 }
+    
+    let leftHeight = checkHeight(node.left)
+    if leftHeight == -1 { return -1 }
+    
+    let rightHeight = checkHeight(node.right)
+    if rightHeight == -1 { return -1 }
+    
+    if abs(leftHeight - rightHeight) > 1 {
+        return -1
+    }
+    
+    return 1 + max(leftHeight, rightHeight)
+}''',
+            ["Time: O(n)", "Space: O(h)", "Bottom-up height checking"],
+            "Calculate heights bottom-up, return -1 if unbalanced found."
+        )
         
         # Dynamic Programming Problems (15 problems)
         self.add_chapter_title("A.5 Dynamic Programming Problems (15 Problems)")
         
-        dp_problems = [
-            ("A.5.1 Climbing Stairs ⭐", "Basic DP - Fibonacci pattern"),
-            ("A.5.2 House Robber ⭐⭐", "Linear DP optimization"),
-            ("A.5.3 House Robber II ⭐⭐", "Circular array DP"),
-            ("A.5.4 Longest Palindromic Subsequence ⭐⭐", "2D DP approach"),
-            ("A.5.5 Palindromic Substrings ⭐⭐", "Expand around centers"),
-            ("A.5.6 Decode Ways ⭐⭐", "String DP pattern"),
-            ("A.5.7 Coin Change ⭐⭐", "Unbounded knapsack"),
-            ("A.5.8 Maximum Product Subarray ⭐⭐", "Track min/max products"),
-            ("A.5.9 Word Break ⭐⭐", "String segmentation DP"),
-            ("A.5.10 Combination Sum IV ⭐⭐", "Count combinations"),
-            ("A.5.11 Longest Increasing Subsequence ⭐⭐", "LIS with binary search"),
-            ("A.5.12 Unique Paths ⭐⭐", "Grid path counting"),
-            ("A.5.13 Jump Game ⭐⭐", "Greedy vs DP approach"),
-            ("A.5.14 Edit Distance ⭐⭐⭐", "Levenshtein distance"),
-            ("A.5.15 Regular Expression Matching ⭐⭐⭐", "2D DP with patterns")
-        ]
+        # DP Problem 1: Climbing Stairs
+        self.add_topic(
+            "A.5.1 Climbing Stairs ⭐",
+            "Count ways to reach nth stair (1 or 2 steps).",
+            '''func climbStairs(_ n: Int) -> Int {
+    guard n > 2 else { return n }
+    
+    var dp = [0, 1, 2]
+    
+    for i in 3...n {
+        let ways = dp[1] + dp[2]
+        dp[1] = dp[2]
+        dp[2] = ways
+    }
+    
+    return dp[2]
+}
+
+// Recursive with memoization
+func climbStairsRecursive(_ n: Int) -> Int {
+    var memo: [Int: Int] = [:]
+    
+    func climb(_ step: Int) -> Int {
+        if step <= 2 { return step }
         
-        for title, description in dp_problems:
-            self.add_topic(title, description, 
-                          "// Swift DP solution with memoization/tabulation", 
-                          ["Time/Space complexity"], 
-                          "Dynamic programming approach explanation")
+        if let cached = memo[step] {
+            return cached
+        }
+        
+        memo[step] = climb(step - 1) + climb(step - 2)
+        return memo[step]!
+    }
+    
+    return climb(n)
+}''',
+            ["Time: O(n)", "Space: O(1) iterative, O(n) recursive", "Fibonacci pattern DP"],
+            "Each step can be reached from previous step or two steps before."
+        )
+        
+        # DP Problem 2: House Robber
+        self.add_topic(
+            "A.5.2 House Robber ⭐⭐",
+            "Rob houses without robbing adjacent ones.",
+            '''func rob(_ nums: [Int]) -> Int {
+    guard !nums.isEmpty else { return 0 }
+    guard nums.count > 1 else { return nums[0] }
+    
+    var prev1 = 0  // max money up to i-1
+    var prev2 = 0  // max money up to i-2
+    
+    for num in nums {
+        let current = max(prev1, prev2 + num)
+        prev2 = prev1
+        prev1 = current
+    }
+    
+    return prev1
+}
+
+// Alternative with explicit DP array
+func robDP(_ nums: [Int]) -> Int {
+    guard !nums.isEmpty else { return 0 }
+    guard nums.count > 1 else { return nums[0] }
+    
+    var dp = Array(repeating: 0, count: nums.count)
+    dp[0] = nums[0]
+    dp[1] = max(nums[0], nums[1])
+    
+    for i in 2..<nums.count {
+        dp[i] = max(dp[i-1], dp[i-2] + nums[i])
+    }
+    
+    return dp[nums.count - 1]
+}''',
+            ["Time: O(n)", "Space: O(1)", "Linear DP optimization"],
+            "Track maximum money without robbing adjacent houses."
+        )
+        
+        # DP Problem 3: House Robber II
+        self.add_topic(
+            "A.5.3 House Robber II ⭐⭐",
+            "Rob houses in circular array (first and last adjacent).",
+            '''func robCircular(_ nums: [Int]) -> Int {
+    guard !nums.isEmpty else { return 0 }
+    guard nums.count > 1 else { return nums[0] }
+    guard nums.count > 2 else { return max(nums[0], nums[1]) }
+    
+    func robLinear(_ houses: [Int]) -> Int {
+        var prev1 = 0, prev2 = 0
+        
+        for house in houses {
+            let current = max(prev1, prev2 + house)
+            prev2 = prev1
+            prev1 = current
+        }
+        
+        return prev1
+    }
+    
+    // Case 1: Rob first house, skip last (houses[0...n-2])
+    let robWithFirst = robLinear(Array(nums[0..<nums.count-1]))
+    
+    // Case 2: Skip first house, can rob last (houses[1...n-1])
+    let robWithoutFirst = robLinear(Array(nums[1..<nums.count]))
+    
+    return max(robWithFirst, robWithoutFirst)
+}''',
+            ["Time: O(n)", "Space: O(1)", "Circular array DP"],
+            "Handle circular constraint by solving two linear cases."
+        )
+        
+        # DP Problem 4: Longest Palindromic Subsequence
+        self.add_topic(
+            "A.5.4 Longest Palindromic Subsequence ⭐⭐",
+            "Find length of longest palindromic subsequence.",
+            '''func longestPalindromeSubseq(_ s: String) -> Int {
+    let chars = Array(s)
+    let n = chars.count
+    var dp = Array(repeating: Array(repeating: 0, count: n), count: n)
+    
+    // Every single character is palindrome of length 1
+    for i in 0..<n {
+        dp[i][i] = 1
+    }
+    
+    // Check for subsequences of length 2 to n
+    for length in 2...n {
+        for i in 0...(n - length) {
+            let j = i + length - 1
+            
+            if chars[i] == chars[j] {
+                dp[i][j] = dp[i+1][j-1] + 2
+            } else {
+                dp[i][j] = max(dp[i+1][j], dp[i][j-1])
+            }
+        }
+    }
+    
+    return dp[0][n-1]
+}''',
+            ["Time: O(n²)", "Space: O(n²)", "2D DP approach"],
+            "Build table bottom-up, expand from center matches."
+        )
+        
+        # DP Problem 5: Palindromic Substrings
+        self.add_topic(
+            "A.5.5 Palindromic Substrings ⭐⭐",
+            "Count all palindromic substrings in string.",
+            '''func countSubstrings(_ s: String) -> Int {
+    let chars = Array(s)
+    var count = 0
+    
+    func expandAroundCenter(_ left: Int, _ right: Int) -> Int {
+        var l = left, r = right, palindromes = 0
+        
+        while l >= 0 && r < chars.count && chars[l] == chars[r] {
+            palindromes += 1
+            l -= 1
+            r += 1
+        }
+        
+        return palindromes
+    }
+    
+    for i in 0..<chars.count {
+        // Odd length palindromes (center at i)
+        count += expandAroundCenter(i, i)
+        
+        // Even length palindromes (center between i and i+1)
+        count += expandAroundCenter(i, i + 1)
+    }
+    
+    return count
+}
+
+// Alternative: DP approach
+func countSubstringsDP(_ s: String) -> Int {
+    let chars = Array(s)
+    let n = chars.count
+    var dp = Array(repeating: Array(repeating: false, count: n), count: n)
+    var count = 0
+    
+    // Every single character is palindrome
+    for i in 0..<n {
+        dp[i][i] = true
+        count += 1
+    }
+    
+    // Check for length 2
+    for i in 0..<n-1 {
+        if chars[i] == chars[i+1] {
+            dp[i][i+1] = true
+            count += 1
+        }
+    }
+    
+    // Check for lengths 3 to n
+    for length in 3...n {
+        for i in 0...(n-length) {
+            let j = i + length - 1
+            
+            if chars[i] == chars[j] && dp[i+1][j-1] {
+                dp[i][j] = true
+                count += 1
+            }
+        }
+    }
+    
+    return count
+}''',
+            ["Time: O(n²)", "Space: O(1) expand, O(n²) DP", "Expand around centers"],
+            "Check all possible centers for palindromes."
+        )
+        
+        # DP Problem 6: Decode Ways
+        self.add_topic("A.5.6 Decode Ways ⭐⭐", "Count ways to decode string", 
+                      '''func numDecodings(_ s: String) -> Int {
+    let chars = Array(s)
+    guard !chars.isEmpty && chars[0] != "0" else { return 0 }
+    
+    var dp1 = 1, dp2 = 1  // dp[i-1], dp[i-2]
+    
+    for i in 1..<chars.count {
+        var current = 0
+        
+        if chars[i] != "0" {
+            current += dp1
+        }
+        
+        let twoDigit = Int(String(chars[i-1...i]))!
+        if twoDigit >= 10 && twoDigit <= 26 {
+            current += dp2
+        }
+        
+        dp2 = dp1
+        dp1 = current
+    }
+    
+    return dp1
+}''', ["Time: O(n)", "Space: O(1)"], "String DP with 1/2 digit decoding")
+        
+        # DP Problem 7: Coin Change
+        self.add_topic("A.5.7 Coin Change ⭐⭐", "Find minimum coins for amount", 
+                      '''func coinChange(_ coins: [Int], _ amount: Int) -> Int {
+    var dp = Array(repeating: amount + 1, count: amount + 1)
+    dp[0] = 0
+    
+    for i in 1...amount {
+        for coin in coins {
+            if coin <= i {
+                dp[i] = min(dp[i], dp[i - coin] + 1)
+            }
+        }
+    }
+    
+    return dp[amount] > amount ? -1 : dp[amount]
+}''', ["Time: O(amount × coins)", "Space: O(amount)"], "Unbounded knapsack DP")
+        
+        # DP Problem 8: Maximum Product Subarray  
+        self.add_topic("A.5.8 Maximum Product Subarray ⭐⭐", "Find max product subarray", 
+                      '''func maxProduct(_ nums: [Int]) -> Int {
+    var maxProd = nums[0], minProd = nums[0], result = nums[0]
+    
+    for i in 1..<nums.count {
+        let num = nums[i]
+        let tempMax = max(num, num * maxProd, num * minProd)
+        minProd = min(num, num * maxProd, num * minProd)
+        maxProd = tempMax
+        result = max(result, maxProd)
+    }
+    
+    return result
+}''', ["Time: O(n)", "Space: O(1)"], "Track min/max products for negatives")
+        
+        # DP Problem 9: Word Break
+        self.add_topic("A.5.9 Word Break ⭐⭐", "Check if string can be segmented", 
+                      '''func wordBreak(_ s: String, _ wordDict: [String]) -> Bool {
+    let wordSet = Set(wordDict)
+    var dp = Array(repeating: false, count: s.count + 1)
+    dp[0] = true
+    
+    let chars = Array(s)
+    
+    for i in 1...s.count {
+        for j in 0..<i {
+            if dp[j] && wordSet.contains(String(chars[j..<i])) {
+                dp[i] = true
+                break
+            }
+        }
+    }
+    
+    return dp[s.count]
+}''', ["Time: O(n³)", "Space: O(n)"], "String segmentation DP")
+        
+        # DP Problem 10: Combination Sum IV
+        self.add_topic("A.5.10 Combination Sum IV ⭐⭐", "Count combinations for target", 
+                      '''func combinationSum4(_ nums: [Int], _ target: Int) -> Int {
+    var dp = Array(repeating: 0, count: target + 1)
+    dp[0] = 1
+    
+    for i in 1...target {
+        for num in nums {
+            if num <= i {
+                dp[i] += dp[i - num]
+            }
+        }
+    }
+    
+    return dp[target]
+}''', ["Time: O(target × n)", "Space: O(target)"], "Count combinations DP")
+        
+        # DP Problem 11: Longest Increasing Subsequence
+        self.add_topic("A.5.11 Longest Increasing Subsequence ⭐⭐", "Find LIS length", 
+                      '''func lengthOfLIS(_ nums: [Int]) -> Int {
+    var tails: [Int] = []
+    
+    for num in nums {
+        var left = 0, right = tails.count
+        
+        while left < right {
+            let mid = (left + right) / 2
+            if tails[mid] < num {
+                left = mid + 1
+            } else {
+                right = mid
+            }
+        }
+        
+        if left == tails.count {
+            tails.append(num)
+        } else {
+            tails[left] = num
+        }
+    }
+    
+    return tails.count
+}''', ["Time: O(n log n)", "Space: O(n)"], "LIS with binary search")
+        
+        # DP Problem 12: Unique Paths
+        self.add_topic("A.5.12 Unique Paths ⭐⭐", "Count paths in grid", 
+                      '''func uniquePaths(_ m: Int, _ n: Int) -> Int {
+    var dp = Array(repeating: 1, count: n)
+    
+    for i in 1..<m {
+        for j in 1..<n {
+            dp[j] += dp[j-1]
+        }
+    }
+    
+    return dp[n-1]
+}''', ["Time: O(m×n)", "Space: O(n)"], "Grid path counting DP")
+        
+        # DP Problem 13: Jump Game
+        self.add_topic("A.5.13 Jump Game ⭐⭐", "Check if can reach end", 
+                      '''func canJump(_ nums: [Int]) -> Bool {
+    var maxReach = 0
+    
+    for i in 0..<nums.count {
+        if i > maxReach { return false }
+        maxReach = max(maxReach, i + nums[i])
+    }
+    
+    return true
+}''', ["Time: O(n)", "Space: O(1)"], "Greedy approach better than DP")
+        
+        # DP Problem 14: Edit Distance
+        self.add_topic("A.5.14 Edit Distance ⭐⭐⭐", "Minimum edit operations", 
+                      '''func minDistance(_ word1: String, _ word2: String) -> Int {
+    let chars1 = Array(word1), chars2 = Array(word2)
+    let m = chars1.count, n = chars2.count
+    
+    var dp = Array(repeating: Array(repeating: 0, count: n + 1), count: m + 1)
+    
+    for i in 0...m { dp[i][0] = i }
+    for j in 0...n { dp[0][j] = j }
+    
+    for i in 1...m {
+        for j in 1...n {
+            if chars1[i-1] == chars2[j-1] {
+                dp[i][j] = dp[i-1][j-1]
+            } else {
+                dp[i][j] = 1 + min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1])
+            }
+        }
+    }
+    
+    return dp[m][n]
+}''', ["Time: O(m×n)", "Space: O(m×n)"], "Levenshtein distance DP")
+        
+        # DP Problem 15: Regular Expression Matching
+        self.add_topic("A.5.15 Regular Expression Matching ⭐⭐⭐", "Pattern matching with . and *", 
+                      '''func isMatch(_ s: String, _ p: String) -> Bool {
+    let sChars = Array(s), pChars = Array(p)
+    let m = sChars.count, n = pChars.count
+    
+    var dp = Array(repeating: Array(repeating: false, count: n + 1), count: m + 1)
+    dp[0][0] = true
+    
+    for j in 2...n {
+        if pChars[j-1] == "*" {
+            dp[0][j] = dp[0][j-2]
+        }
+    }
+    
+    for i in 1...m {
+        for j in 1...n {
+            let sc = sChars[i-1], pc = pChars[j-1]
+            
+            if pc == "*" {
+                dp[i][j] = dp[i][j-2]  // Match 0 times
+                if sChars[i-1] == pChars[j-2] || pChars[j-2] == "." {
+                    dp[i][j] = dp[i][j] || dp[i-1][j]  // Match 1+ times
+                }
+            } else if sc == pc || pc == "." {
+                dp[i][j] = dp[i-1][j-1]
+            }
+        }
+    }
+    
+    return dp[m][n]
+}''', ["Time: O(m×n)", "Space: O(m×n)"], "2D DP with pattern matching")
         
         # Graph Problems (12 problems)
         self.add_chapter_title("A.6 Graph Problems (12 Problems)")
         
-        graph_problems = [
-            ("A.6.1 Number of Islands ⭐⭐", "DFS/BFS grid traversal"),
-            ("A.6.2 Clone Graph ⭐⭐", "Deep clone with DFS"),
-            ("A.6.3 Max Area of Island ⭐⭐", "DFS with area calculation"),
-            ("A.6.4 Pacific Atlantic Water Flow ⭐⭐", "Multi-source BFS/DFS"),
-            ("A.6.5 Surrounded Regions ⭐⭐", "Boundary DFS technique"),
-            ("A.6.6 Rotting Oranges ⭐⭐", "Multi-source BFS"),
-            ("A.6.7 Course Schedule ⭐⭐", "Topological sort - cycle detection"),
-            ("A.6.8 Course Schedule II ⭐⭐", "Topological ordering"),
-            ("A.6.9 Redundant Connection ⭐⭐", "Union-Find cycle detection"),
-            ("A.6.10 Word Ladder ⭐⭐⭐", "BFS shortest path"),
-            ("A.6.11 Alien Dictionary ⭐⭐⭐", "Topological sort"),
-            ("A.6.12 Network Delay Time ⭐⭐", "Dijkstra's algorithm")
-        ]
+        # Graph Problem 1: Number of Islands
+        self.add_topic(
+            "A.6.1 Number of Islands ⭐⭐",
+            "Count distinct islands in 2D grid using DFS.",
+            '''func numIslands(_ grid: [[Character]]) -> Int {
+    guard !grid.isEmpty else { return 0 }
+    
+    var grid = grid
+    var count = 0
+    
+    func dfs(_ row: Int, _ col: Int) {
+        guard row >= 0 && row < grid.count && 
+              col >= 0 && col < grid[0].count &&
+              grid[row][col] == "1" else { return }
         
-        for title, description in graph_problems:
-            self.add_topic(title, description, 
-                          "// Swift graph solution with BFS/DFS/Union-Find", 
-                          ["Time/Space complexity"], 
-                          "Graph algorithm explanation")
+        grid[row][col] = "0"  // Mark as visited
+        
+        dfs(row + 1, col)  // Down
+        dfs(row - 1, col)  // Up
+        dfs(row, col + 1)  // Right
+        dfs(row, col - 1)  // Left
+    }
+    
+    for i in 0..<grid.count {
+        for j in 0..<grid[0].count {
+            if grid[i][j] == "1" {
+                count += 1
+                dfs(i, j)
+            }
+        }
+    }
+    
+    return count
+}''',
+            ["Time: O(m×n)", "Space: O(m×n)", "DFS traversal"],
+            "Use DFS to explore and mark connected land cells for each island."
+        )
+        
+        # Graph Problem 2: Clone Graph  
+        self.add_topic(
+            "A.6.2 Clone Graph ⭐⭐",
+            "Deep clone an undirected graph.",
+            '''class Node {
+    public var val: Int
+    public var neighbors: [Node?]
+    public init(_ val: Int) {
+        self.val = val
+        self.neighbors = []
+    }
+}
+
+func cloneGraph(_ node: Node?) -> Node? {
+    guard let node = node else { return nil }
+    
+    var visited: [Int: Node] = [:]
+    
+    func dfs(_ node: Node) -> Node {
+        if let clone = visited[node.val] {
+            return clone
+        }
+        
+        let clone = Node(node.val)
+        visited[node.val] = clone
+        
+        for neighbor in node.neighbors {
+            if let neighbor = neighbor {
+                clone.neighbors.append(dfs(neighbor))
+            }
+        }
+        
+        return clone
+    }
+    
+    return dfs(node)
+}''',
+            ["Time: O(V + E)", "Space: O(V)", "DFS with hashmap"],
+            "Use DFS with hashmap to track cloned nodes and avoid cycles."
+        )
+        
+        # Graph Problem 3: Max Area of Island
+        self.add_topic(
+            "A.6.3 Max Area of Island ⭐⭐",
+            "Find the area of the largest island.",
+            '''func maxAreaOfIsland(_ grid: [[Int]]) -> Int {
+    guard !grid.isEmpty else { return 0 }
+    
+    var grid = grid
+    var maxArea = 0
+    
+    func dfs(_ row: Int, _ col: Int) -> Int {
+        guard row >= 0 && row < grid.count && 
+              col >= 0 && col < grid[0].count &&
+              grid[row][col] == 1 else { return 0 }
+        
+        grid[row][col] = 0  // Mark as visited
+        
+        return 1 + dfs(row + 1, col) + dfs(row - 1, col) + 
+                   dfs(row, col + 1) + dfs(row, col - 1)
+    }
+    
+    for i in 0..<grid.count {
+        for j in 0..<grid[0].count {
+            if grid[i][j] == 1 {
+                maxArea = max(maxArea, dfs(i, j))
+            }
+        }
+    }
+    
+    return maxArea
+}''',
+            ["Time: O(m×n)", "Space: O(m×n)", "DFS with area calculation"],
+            "Use DFS to calculate area of each island, track maximum."
+        )
+        
+        # Continue with remaining 9 graph problems efficiently
+        self.add_topic(
+            "A.6.4 Pacific Atlantic Water Flow ⭐⭐",
+            "Find cells from which water can flow to both oceans.",
+            '''func pacificAtlantic(_ heights: [[Int]]) -> [[Int]] {
+    let m = heights.count, n = heights[0].count
+    var pacific = Array(repeating: Array(repeating: false, count: n), count: m)
+    var atlantic = Array(repeating: Array(repeating: false, count: n), count: m)
+    
+    func dfs(_ row: Int, _ col: Int, _ visited: inout [[Bool]], _ prevHeight: Int) {
+        guard row >= 0 && row < m && col >= 0 && col < n &&
+              !visited[row][col] && heights[row][col] >= prevHeight else { return }
+        
+        visited[row][col] = true
+        
+        dfs(row + 1, col, &visited, heights[row][col])
+        dfs(row - 1, col, &visited, heights[row][col])
+        dfs(row, col + 1, &visited, heights[row][col])
+        dfs(row, col - 1, &visited, heights[row][col])
+    }
+    
+    // DFS from Pacific border
+    for i in 0..<m {
+        dfs(i, 0, &pacific, heights[i][0])
+    }
+    for j in 0..<n {
+        dfs(0, j, &pacific, heights[0][j])
+    }
+    
+    // DFS from Atlantic border
+    for i in 0..<m {
+        dfs(i, n - 1, &atlantic, heights[i][n - 1])
+    }
+    for j in 0..<n {
+        dfs(m - 1, j, &atlantic, heights[m - 1][j])
+    }
+    
+    var result: [[Int]] = []
+    for i in 0..<m {
+        for j in 0..<n {
+            if pacific[i][j] && atlantic[i][j] {
+                result.append([i, j])
+            }
+        }
+    }
+    
+    return result
+}''',
+            ["Time: O(m×n)", "Space: O(m×n)", "Reverse DFS from borders"],
+            "Start DFS from ocean borders, find cells reachable by both."
+        )
+        
+        # Graph Problem 5: Surrounded Regions
+        self.add_topic(
+            "A.6.5 Surrounded Regions ⭐⭐",
+            "Capture surrounded regions using boundary DFS.",
+            '''func solve(_ board: inout [[Character]]) {
+    guard !board.isEmpty else { return }
+    
+    let m = board.count, n = board[0].count
+    
+    func dfs(_ row: Int, _ col: Int) {
+        guard row >= 0 && row < m && col >= 0 && col < n &&
+              board[row][col] == "O" else { return }
+        
+        board[row][col] = "#"  // Mark as boundary-connected
+        
+        dfs(row + 1, col)
+        dfs(row - 1, col)
+        dfs(row, col + 1)  
+        dfs(row, col - 1)
+    }
+    
+    // DFS from all boundary O's
+    for i in 0..<m {
+        dfs(i, 0)      // Left border
+        dfs(i, n - 1)  // Right border
+    }
+    for j in 0..<n {
+        dfs(0, j)      // Top border
+        dfs(m - 1, j)  // Bottom border
+    }
+    
+    // Convert remaining O's to X's, and #'s back to O's
+    for i in 0..<m {
+        for j in 0..<n {
+            if board[i][j] == "O" {
+                board[i][j] = "X"
+            } else if board[i][j] == "#" {
+                board[i][j] = "O"
+            }
+        }
+    }
+}''',
+            ["Time: O(m×n)", "Space: O(m×n)", "Boundary DFS technique"],
+            "Start DFS from borders to identify boundary-connected regions."
+        )
+        
+        # Graph Problem 6: Rotting Oranges
+        self.add_topic(
+            "A.6.6 Rotting Oranges ⭐⭐",
+            "Find time for all oranges to rot using multi-source BFS.",
+            '''func orangesRotting(_ grid: [[Int]]) -> Int {
+    let m = grid.count, n = grid[0].count
+    var grid = grid
+    var queue: [(Int, Int)] = []
+    var freshCount = 0
+    
+    // Find initial rotten oranges and count fresh ones
+    for i in 0..<m {
+        for j in 0..<n {
+            if grid[i][j] == 2 {
+                queue.append((i, j))
+            } else if grid[i][j] == 1 {
+                freshCount += 1
+            }
+        }
+    }
+    
+    guard freshCount > 0 else { return 0 }
+    
+    let directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+    var minutes = 0
+    
+    while !queue.isEmpty && freshCount > 0 {
+        let levelSize = queue.count
+        
+        for _ in 0..<levelSize {
+            let (row, col) = queue.removeFirst()
+            
+            for (dr, dc) in directions {
+                let newRow = row + dr
+                let newCol = col + dc
+                
+                if newRow >= 0 && newRow < m && newCol >= 0 && newCol < n &&
+                   grid[newRow][newCol] == 1 {
+                    grid[newRow][newCol] = 2
+                    queue.append((newRow, newCol))
+                    freshCount -= 1
+                }
+            }
+        }
+        
+        minutes += 1
+    }
+    
+    return freshCount == 0 ? minutes : -1
+}''',
+            ["Time: O(m×n)", "Space: O(m×n)", "Multi-source BFS"],
+            "Start BFS from all initial rotten oranges simultaneously."
+        )
+        
+        # Graph Problem 7: Course Schedule
+        self.add_topic(
+            "A.6.7 Course Schedule ⭐⭐",
+            "Detect if course schedule is possible (no cycles).",
+            '''func canFinish(_ numCourses: Int, _ prerequisites: [[Int]]) -> Bool {
+    var graph: [Int: [Int]] = [:]
+    var inDegree = Array(repeating: 0, count: numCourses)
+    
+    // Build graph and calculate in-degrees
+    for prereq in prerequisites {
+        let course = prereq[0]
+        let prerequisite = prereq[1]
+        
+        graph[prerequisite, default: []].append(course)
+        inDegree[course] += 1
+    }
+    
+    // Kahn's algorithm for topological sort
+    var queue: [Int] = []
+    for i in 0..<numCourses {
+        if inDegree[i] == 0 {
+            queue.append(i)
+        }
+    }
+    
+    var processedCourses = 0
+    
+    while !queue.isEmpty {
+        let course = queue.removeFirst()
+        processedCourses += 1
+        
+        for neighbor in graph[course, default: []] {
+            inDegree[neighbor] -= 1
+            if inDegree[neighbor] == 0 {
+                queue.append(neighbor)
+            }
+        }
+    }
+    
+    return processedCourses == numCourses
+}''',
+            ["Time: O(V + E)", "Space: O(V + E)", "Topological sort - cycle detection"],
+            "Use Kahn's algorithm to detect cycles in course dependency graph."
+        )
+        
+        # Graph Problem 8: Course Schedule II
+        self.add_topic(
+            "A.6.8 Course Schedule II ⭐⭐",
+            "Return course order if possible (topological ordering).",
+            '''func findOrder(_ numCourses: Int, _ prerequisites: [[Int]]) -> [Int] {
+    var graph: [Int: [Int]] = [:]
+    var inDegree = Array(repeating: 0, count: numCourses)
+    
+    // Build graph and calculate in-degrees
+    for prereq in prerequisites {
+        let course = prereq[0]
+        let prerequisite = prereq[1]
+        
+        graph[prerequisite, default: []].append(course)
+        inDegree[course] += 1
+    }
+    
+    // Kahn's algorithm for topological sort
+    var queue: [Int] = []
+    for i in 0..<numCourses {
+        if inDegree[i] == 0 {
+            queue.append(i)
+        }
+    }
+    
+    var result: [Int] = []
+    
+    while !queue.isEmpty {
+        let course = queue.removeFirst()
+        result.append(course)
+        
+        for neighbor in graph[course, default: []] {
+            inDegree[neighbor] -= 1
+            if inDegree[neighbor] == 0 {
+                queue.append(neighbor)
+            }
+        }
+    }
+    
+    return result.count == numCourses ? result : []
+}''',
+            ["Time: O(V + E)", "Space: O(V + E)", "Topological ordering"],
+            "Use Kahn's algorithm to generate valid course sequence."
+        )
+        
+        # Graph Problem 9: Redundant Connection
+        self.add_topic(
+            "A.6.9 Redundant Connection ⭐⭐",
+            "Find redundant edge that creates cycle using Union-Find.",
+            '''func findRedundantConnection(_ edges: [[Int]]) -> [Int] {
+    let n = edges.count
+    var parent = Array(0...n)
+    
+    func find(_ x: Int) -> Int {
+        if parent[x] != x {
+            parent[x] = find(parent[x])  // Path compression
+        }
+        return parent[x]
+    }
+    
+    func union(_ x: Int, _ y: Int) -> Bool {
+        let rootX = find(x)
+        let rootY = find(y)
+        
+        if rootX == rootY {
+            return false  // Already connected (cycle found)
+        }
+        
+        parent[rootX] = rootY
+        return true
+    }
+    
+    for edge in edges {
+        if !union(edge[0], edge[1]) {
+            return edge  // This edge creates cycle
+        }
+    }
+    
+    return []
+}''',
+            ["Time: O(n α(n))", "Space: O(n)", "Union-Find with path compression"],
+            "Use Union-Find to detect when adding edge creates cycle."
+        )
+        
+        # Graph Problem 10: Word Ladder
+        self.add_topic(
+            "A.6.10 Word Ladder ⭐⭐⭐",
+            "Find shortest transformation path using BFS.",
+            '''func ladderLength(_ beginWord: String, _ endWord: String, _ wordList: [String]) -> Int {
+    var wordSet = Set(wordList)
+    guard wordSet.contains(endWord) else { return 0 }
+    
+    var queue = [(beginWord, 1)]
+    
+    while !queue.isEmpty {
+        let (currentWord, steps) = queue.removeFirst()
+        
+        if currentWord == endWord {
+            return steps
+        }
+        
+        let wordArray = Array(currentWord)
+        
+        for i in 0..<wordArray.count {
+            for c in "abcdefghijklmnopqrstuvwxyz" {
+                if c == wordArray[i] { continue }
+                
+                var newWordArray = wordArray
+                newWordArray[i] = c
+                let newWord = String(newWordArray)
+                
+                if wordSet.contains(newWord) {
+                    if newWord == endWord {
+                        return steps + 1
+                    }
+                    wordSet.remove(newWord)
+                    queue.append((newWord, steps + 1))
+                }
+            }
+        }
+    }
+    
+    return 0
+}''',
+            ["Time: O(m² × n)", "Space: O(m × n)", "BFS with string transformation"],
+            "BFS to find shortest path by trying all single-character changes."
+        )
+        
+        # Graph Problem 11: Alien Dictionary  
+        self.add_topic(
+            "A.6.11 Alien Dictionary ⭐⭐⭐",
+            "Determine character order using topological sort.",
+            '''func alienOrder(_ words: [String]) -> String {
+    var graph: [Character: Set<Character>] = [:]
+    var inDegree: [Character: Int] = [:]
+    
+    // Initialize all characters
+    for word in words {
+        for char in word {
+            graph[char] = []
+            inDegree[char] = 0
+        }
+    }
+    
+    // Build graph from adjacent words
+    for i in 0..<words.count - 1 {
+        let word1 = Array(words[i])
+        let word2 = Array(words[i + 1])
+        
+        let minLength = min(word1.count, word2.count)
+        
+        for j in 0..<minLength {
+            if word1[j] != word2[j] {
+                if !graph[word1[j]]!.contains(word2[j]) {
+                    graph[word1[j]]!.insert(word2[j])
+                    inDegree[word2[j]]! += 1
+                }
+                break
+            }
+        }
+        
+        // Check invalid case: word2 is prefix of word1
+        if word1.count > word2.count && 
+           Array(word1.prefix(word2.count)) == word2 {
+            return ""
+        }
+    }
+    
+    // Topological sort using Kahn's algorithm
+    var queue: [Character] = []
+    for (char, degree) in inDegree {
+        if degree == 0 {
+            queue.append(char)
+        }
+    }
+    
+    var result = ""
+    
+    while !queue.isEmpty {
+        let char = queue.removeFirst()
+        result.append(char)
+        
+        for neighbor in graph[char]! {
+            inDegree[neighbor]! -= 1
+            if inDegree[neighbor]! == 0 {
+                queue.append(neighbor)
+            }
+        }
+    }
+    
+    return result.count == inDegree.count ? result : ""
+}''',
+            ["Time: O(c)", "Space: O(1)", "Topological sort with character ordering"],
+            "Build dependency graph from word comparisons, use topological sort."
+        )
+        
+        # Graph Problem 12: Network Delay Time
+        self.add_topic(
+            "A.6.12 Network Delay Time ⭐⭐",
+            "Find minimum time to reach all nodes using Dijkstra's algorithm.",
+            '''func networkDelayTime(_ times: [[Int]], _ n: Int, _ k: Int) -> Int {
+    var graph: [Int: [(Int, Int)]] = [:]
+    
+    // Build adjacency list
+    for time in times {
+        let u = time[0], v = time[1], w = time[2]
+        graph[u, default: []].append((v, w))
+    }
+    
+    // Dijkstra's algorithm
+    var distances = Array(repeating: Int.max, count: n + 1)
+    distances[k] = 0
+    
+    var heap: [(Int, Int)] = [(0, k)]  // (distance, node)
+    
+    while !heap.isEmpty {
+        heap.sort { $0.0 < $1.0 }
+        let (currentDistance, node) = heap.removeFirst()
+        
+        if currentDistance > distances[node] {
+            continue
+        }
+        
+        for (neighbor, weight) in graph[node, default: []] {
+            let newDistance = currentDistance + weight
+            
+            if newDistance < distances[neighbor] {
+                distances[neighbor] = newDistance
+                heap.append((newDistance, neighbor))
+            }
+        }
+    }
+    
+    let maxDistance = distances[1...n].max()!
+    return maxDistance == Int.max ? -1 : maxDistance
+}''',
+            ["Time: O(E log V)", "Space: O(V + E)", "Dijkstra's shortest path"],
+            "Use Dijkstra's algorithm to find shortest paths from source to all nodes."
+        )
         
         # Heap & Priority Queue Problems (8 problems)
         self.add_chapter_title("A.7 Heap & Priority Queue Problems (8 Problems)")
         
-        heap_problems = [
-            ("A.7.1 Kth Largest Element ⭐⭐", "Quick select vs heap"),
-            ("A.7.2 Last Stone Weight ⭐", "Max heap simulation"),
-            ("A.7.3 K Closest Points to Origin ⭐⭐", "Min heap approach"),
-            ("A.7.4 Task Scheduler ⭐⭐", "Greedy with max heap"),
-            ("A.7.5 Top K Frequent Elements ⭐⭐", "Bucket sort vs heap"),
-            ("A.7.6 Find Median from Data Stream ⭐⭐⭐", "Two heaps technique"),
-            ("A.7.7 Merge k Sorted Lists ⭐⭐⭐", "Min heap approach"),
-            ("A.7.8 Meeting Rooms II ⭐⭐", "Min heap for end times")
-        ]
+        # Heap Problem 1: Kth Largest Element
+        self.add_topic(
+            "A.7.1 Kth Largest Element ⭐⭐",
+            "Find the kth largest element in array.",
+            '''func findKthLargest(_ nums: [Int], _ k: Int) -> Int {
+    var heap = nums.prefix(k).sorted()  // Min heap simulation
+    
+    for i in k..<nums.count {
+        if nums[i] > heap[0] {
+            heap[0] = nums[i]
+            heap.sort()  // Re-heapify
+        }
+    }
+    
+    return heap[0]
+}
+
+// Quick Select approach (more efficient)
+func findKthLargestQuickSelect(_ nums: [Int], _ k: Int) -> Int {
+    var nums = nums
+    let target = nums.count - k
+    
+    func partition(_ left: Int, _ right: Int) -> Int {
+        let pivot = nums[right]
+        var i = left
         
-        for title, description in heap_problems:
-            self.add_topic(title, description, 
-                          "// Swift heap/priority queue solution", 
-                          ["Time/Space complexity"], 
-                          "Heap algorithm explanation")
+        for j in left..<right {
+            if nums[j] <= pivot {
+                nums.swapAt(i, j)
+                i += 1
+            }
+        }
+        nums.swapAt(i, right)
+        return i
+    }
+    
+    func quickSelect(_ left: Int, _ right: Int) -> Int {
+        let pivotIndex = partition(left, right)
+        
+        if pivotIndex == target {
+            return nums[pivotIndex]
+        } else if pivotIndex < target {
+            return quickSelect(pivotIndex + 1, right)
+        } else {
+            return quickSelect(left, pivotIndex - 1)
+        }
+    }
+    
+    return quickSelect(0, nums.count - 1)
+}''',
+            ["Time: O(n) average QuickSelect, O(n log k) heap", "Space: O(k)", "Quick select or min heap"],
+            "Use quickselect for O(n) average, or maintain min heap of size k."
+        )
+        
+        # Heap Problem 2: Last Stone Weight
+        self.add_topic(
+            "A.7.2 Last Stone Weight ⭐",
+            "Simulate stone smashing with max heap.",
+            '''func lastStoneWeight(_ stones: [Int]) -> Int {
+    var maxHeap = stones.sorted(by: >)
+    
+    while maxHeap.count > 1 {
+        let first = maxHeap.removeFirst()
+        let second = maxHeap.removeFirst()
+        
+        if first != second {
+            let newStone = first - second
+            // Insert in sorted order (maintaining max heap property)
+            var inserted = false
+            for i in 0..<maxHeap.count {
+                if newStone > maxHeap[i] {
+                    maxHeap.insert(newStone, at: i)
+                    inserted = true
+                    break
+                }
+            }
+            if !inserted {
+                maxHeap.append(newStone)
+            }
+        }
+    }
+    
+    return maxHeap.first ?? 0
+}''',
+            ["Time: O(n² log n)", "Space: O(1)", "Max heap simulation"],
+            "Use max heap to always get the two heaviest stones."
+        )
+        
+        # Heap Problem 3: K Closest Points
+        self.add_topic(
+            "A.7.3 K Closest Points to Origin ⭐⭐",
+            "Find k closest points to origin using heap.",
+            '''func kClosest(_ points: [[Int]], _ k: Int) -> [[Int]] {
+    func distance(_ point: [Int]) -> Int {
+        return point[0] * point[0] + point[1] * point[1]
+    }
+    
+    // Use max heap to maintain k closest points
+    var maxHeap: [(dist: Int, point: [Int])] = []
+    
+    for point in points {
+        let dist = distance(point)
+        
+        if maxHeap.count < k {
+            maxHeap.append((dist, point))
+            maxHeap.sort { $0.dist > $1.dist }
+        } else if dist < maxHeap[0].dist {
+            maxHeap[0] = (dist, point)
+            maxHeap.sort { $0.dist > $1.dist }
+        }
+    }
+    
+    return maxHeap.map { $0.point }
+}
+
+// Alternative: Sort approach
+func kClosestSort(_ points: [[Int]], _ k: Int) -> [[Int]] {
+    let sortedPoints = points.sorted { 
+        $0[0]*$0[0] + $0[1]*$0[1] < $1[0]*$1[0] + $1[1]*$1[1] 
+    }
+    return Array(sortedPoints.prefix(k))
+}''',
+            ["Time: O(n log k) heap, O(n log n) sort", "Space: O(k)", "Max heap or sorting"],
+            "Use max heap to keep k smallest distances, or sort all points."
+        )
+        
+        # Continue with remaining heap problems...
+        self.add_topic(
+            "A.7.4 Task Scheduler ⭐⭐",
+            "Schedule tasks with cooldown using max heap.",
+            '''func leastInterval(_ tasks: [Character], _ n: Int) -> Int {
+    var freq: [Character: Int] = [:]
+    for task in tasks {
+        freq[task, default: 0] += 1
+    }
+    
+    var maxHeap = freq.values.sorted(by: >)
+    var time = 0
+    
+    while !maxHeap.isEmpty {
+        var temp: [Int] = []
+        
+        for i in 0...n {
+            if !maxHeap.isEmpty {
+                temp.append(maxHeap.removeFirst())
+            }
+        }
+        
+        for j in 0..<temp.count {
+            temp[j] -= 1
+            if temp[j] > 0 {
+                maxHeap.append(temp[j])
+            }
+        }
+        
+        maxHeap.sort(by: >)
+        time += maxHeap.isEmpty ? temp.count : n + 1
+    }
+    
+    return time
+}''',
+            ["Time: O(n log m)", "Space: O(m)", "Max heap with cooldown"],
+            "Use max heap to schedule most frequent tasks first."
+        )
+        
+        # Heap Problem 5: Top K Frequent Elements
+        self.add_topic(
+            "A.7.5 Top K Frequent Elements ⭐⭐",
+            "Find k most frequent elements using heap.",
+            '''func topKFrequent(_ nums: [Int], _ k: Int) -> [Int] {
+    var freq: [Int: Int] = [:]
+    for num in nums {
+        freq[num, default: 0] += 1
+    }
+    
+    // Use min heap of size k
+    var minHeap: [(freq: Int, num: Int)] = []
+    
+    for (num, frequency) in freq {
+        if minHeap.count < k {
+            minHeap.append((frequency, num))
+            minHeap.sort { $0.freq < $1.freq }
+        } else if frequency > minHeap[0].freq {
+            minHeap[0] = (frequency, num)
+            minHeap.sort { $0.freq < $1.freq }
+        }
+    }
+    
+    return minHeap.map { $0.num }
+}
+
+// Alternative: Bucket sort approach
+func topKFrequentBucket(_ nums: [Int], _ k: Int) -> [Int] {
+    var freq: [Int: Int] = [:]
+    for num in nums {
+        freq[num, default: 0] += 1
+    }
+    
+    var buckets: [[Int]] = Array(repeating: [], count: nums.count + 1)
+    for (num, frequency) in freq {
+        buckets[frequency].append(num)
+    }
+    
+    var result: [Int] = []
+    for i in stride(from: buckets.count - 1, through: 0, by: -1) {
+        result.append(contentsOf: buckets[i])
+        if result.count >= k { break }
+    }
+    
+    return Array(result.prefix(k))
+}''',
+            ["Time: O(n log k) heap, O(n) bucket sort", "Space: O(n)", "Min heap or bucket sort"],
+            "Use min heap of size k, or bucket sort for O(n) solution."
+        )
+        
+        # Heap Problem 6: Find Median from Data Stream
+        self.add_topic(
+            "A.7.6 Find Median from Data Stream ⭐⭐⭐",
+            "Maintain running median using two heaps.",
+            '''class MedianFinder {
+    private var maxHeap: [Int] = []  // Left half (max heap)
+    private var minHeap: [Int] = []  // Right half (min heap)
+    
+    init() {}
+    
+    func addNum(_ num: Int) {
+        // Add to max heap first
+        maxHeap.append(num)
+        maxHeap.sort(by: >)
+        
+        // Move largest from max heap to min heap
+        if !maxHeap.isEmpty {
+            minHeap.append(maxHeap.removeFirst())
+            minHeap.sort()
+        }
+        
+        // Balance heaps
+        if minHeap.count > maxHeap.count + 1 {
+            maxHeap.append(minHeap.removeFirst())
+            maxHeap.sort(by: >)
+        }
+    }
+    
+    func findMedian() -> Double {
+        if minHeap.count > maxHeap.count {
+            return Double(minHeap[0])
+        } else {
+            return Double(maxHeap[0] + minHeap[0]) / 2.0
+        }
+    }
+}''',
+            ["Time: O(log n) addNum, O(1) findMedian", "Space: O(n)", "Two heaps technique"],
+            "Use max heap for left half, min heap for right half."
+        )
+        
+        # Heap Problem 7: Merge k Sorted Lists (reuse from Linked Lists)
+        self.add_topic(
+            "A.7.7 Merge k Sorted Lists ⭐⭐⭐",
+            "Merge k sorted linked lists using min heap.",
+            '''func mergeKLists(_ lists: [ListNode?]) -> ListNode? {
+    guard !lists.isEmpty else { return nil }
+    
+    // Priority queue simulation with array
+    var heap: [ListNode] = []
+    
+    // Add first node from each non-empty list
+    for list in lists {
+        if let node = list {
+            heap.append(node)
+        }
+    }
+    
+    heap.sort { $0.val < $1.val }
+    
+    let dummy = ListNode(0)
+    var current = dummy
+    
+    while !heap.isEmpty {
+        let minNode = heap.removeFirst()
+        current.next = minNode
+        current = current.next!
+        
+        if let nextNode = minNode.next {
+            heap.append(nextNode)
+            heap.sort { $0.val < $1.val }
+        }
+    }
+    
+    return dummy.next
+}''',
+            ["Time: O(n log k)", "Space: O(k)", "Min heap with k nodes"],
+            "Use min heap to always get smallest node among k lists."
+        )
+        
+        # Heap Problem 8: Meeting Rooms II (reuse from Arrays)
+        self.add_topic(
+            "A.7.8 Meeting Rooms II ⭐⭐",
+            "Find minimum meeting rooms using min heap for end times.",
+            '''func minMeetingRooms(_ intervals: [[Int]]) -> Int {
+    let sortedIntervals = intervals.sorted { $0[0] < $1[0] }
+    var endTimes: [Int] = []  // Min heap for end times
+    
+    for interval in sortedIntervals {
+        let start = interval[0]
+        let end = interval[1]
+        
+        // Remove meetings that have ended
+        endTimes = endTimes.filter { $0 > start }
+        
+        // Add current meeting's end time
+        endTimes.append(end)
+        endTimes.sort()  // Maintain min heap property
+    }
+    
+    return endTimes.count
+}
+
+// Alternative: Event-based approach
+func minMeetingRoomsEvents(_ intervals: [[Int]]) -> Int {
+    var events: [(time: Int, type: Int)] = []  // type: 1 for start, -1 for end
+    
+    for interval in intervals {
+        events.append((interval[0], 1))   // meeting starts
+        events.append((interval[1], -1))  // meeting ends
+    }
+    
+    events.sort { 
+        if $0.time == $1.time {
+            return $0.type < $1.type  // End before start
+        }
+        return $0.time < $1.time 
+    }
+    
+    var currentRooms = 0
+    var maxRooms = 0
+    
+    for event in events {
+        currentRooms += event.type
+        maxRooms = max(maxRooms, currentRooms)
+    }
+    
+    return maxRooms
+}''',
+            ["Time: O(n log n)", "Space: O(n)", "Min heap or event sorting"],
+            "Track meeting end times with min heap, or use event-based sweep line."
+        )
         
         # Stack Problems (6 problems)
         self.add_chapter_title("A.8 Stack Problems (6 Problems)")
         
-        stack_problems = [
-            ("A.8.1 Valid Parentheses ⭐", "Stack for matching brackets"),
-            ("A.8.2 Min Stack ⭐⭐", "Stack with O(1) minimum"),
-            ("A.8.3 Evaluate Reverse Polish Notation ⭐⭐", "Stack evaluation"),
-            ("A.8.4 Daily Temperatures ⭐⭐", "Monotonic stack"),
-            ("A.8.5 Car Fleet ⭐⭐", "Stack simulation"),
-            ("A.8.6 Largest Rectangle in Histogram ⭐⭐⭐", "Stack with indices")
-        ]
+        # Stack Problem 1: Valid Parentheses
+        self.add_topic(
+            "A.8.1 Valid Parentheses ⭐",
+            "Determine if parentheses string is valid.",
+            '''func isValid(_ s: String) -> Bool {
+    var stack: [Character] = []
+    let pairs: [Character: Character] = [")": "(", "}": "{", "]": "["]
+    
+    for char in s {
+        if let openBracket = pairs[char] {
+            if stack.isEmpty || stack.removeLast() != openBracket {
+                return false
+            }
+        } else {
+            stack.append(char)
+        }
+    }
+    
+    return stack.isEmpty
+}''',
+            ["Time: O(n)", "Space: O(n)", "Stack matching"],
+            "Use stack to match opening/closing brackets."
+        )
         
-        for title, description in stack_problems:
-            self.add_topic(title, description, 
-                          "// Swift stack-based solution", 
-                          ["Time/Space complexity"], 
-                          "Stack algorithm explanation")
+        # Stack Problem 2: Min Stack
+        self.add_topic(
+            "A.8.2 Min Stack ⭐⭐",
+            "Design stack with O(1) min operation.",
+            '''class MinStack {
+    private var stack: [Int] = []
+    private var minStack: [Int] = []
+    
+    init() {}
+    
+    func push(_ val: Int) {
+        stack.append(val)
+        
+        if minStack.isEmpty || val <= minStack.last! {
+            minStack.append(val)
+        }
+    }
+    
+    func pop() {
+        if let popped = stack.popLast() {
+            if popped == minStack.last {
+                minStack.removeLast()
+            }
+        }
+    }
+    
+    func top() -> Int {
+        return stack.last!
+    }
+    
+    func getMin() -> Int {
+        return minStack.last!
+    }
+}''',
+            ["Time: O(1) all operations", "Space: O(n)", "Auxiliary stack"],
+            "Use auxiliary stack to track minimum values."
+        )
+        
+        # Stack Problem 3: Evaluate RPN
+        self.add_topic(
+            "A.8.3 Evaluate Reverse Polish Notation ⭐⭐",
+            "Evaluate expression in Reverse Polish Notation.",
+            '''func evalRPN(_ tokens: [String]) -> Int {
+    var stack: [Int] = []
+    
+    for token in tokens {
+        switch token {
+        case "+":
+            let b = stack.removeLast()
+            let a = stack.removeLast()
+            stack.append(a + b)
+        case "-":
+            let b = stack.removeLast()
+            let a = stack.removeLast()
+            stack.append(a - b)
+        case "*":
+            let b = stack.removeLast()
+            let a = stack.removeLast()
+            stack.append(a * b)
+        case "/":
+            let b = stack.removeLast()
+            let a = stack.removeLast()
+            stack.append(a / b)
+        default:
+            stack.append(Int(token)!)
+        }
+    }
+    
+    return stack.first!
+}''',
+            ["Time: O(n)", "Space: O(n)", "Stack evaluation"],
+            "Use stack to evaluate postfix expressions."
+        )
+        
+        # Stack Problem 4: Daily Temperatures
+        self.add_topic(
+            "A.8.4 Daily Temperatures ⭐⭐",
+            "Find next warmer temperature for each day.",
+            '''func dailyTemperatures(_ temperatures: [Int]) -> [Int] {
+    var result = Array(repeating: 0, count: temperatures.count)
+    var stack: [Int] = [] // indices
+    
+    for i in 0..<temperatures.count {
+        while !stack.isEmpty && temperatures[i] > temperatures[stack.last!] {
+            let prevIndex = stack.removeLast()
+            result[prevIndex] = i - prevIndex
+        }
+        stack.append(i)
+    }
+    
+    return result
+}''',
+            ["Time: O(n)", "Space: O(n)", "Monotonic decreasing stack"],
+            "Use monotonic stack to find next greater element."
+        )
+        
+        # Stack Problem 5: Car Fleet
+        self.add_topic(
+            "A.8.5 Car Fleet ⭐⭐",
+            "Count number of car fleets reaching destination.",
+            '''func carFleet(_ target: Int, _ position: [Int], _ speed: [Int]) -> Int {
+    let cars = zip(position, speed).sorted { $0.0 > $1.0 }
+    var stack: [Double] = []
+    
+    for (pos, spd) in cars {
+        let timeToReach = Double(target - pos) / Double(spd)
+        
+        if stack.isEmpty || timeToReach > stack.last! {
+            stack.append(timeToReach)
+        }
+    }
+    
+    return stack.count
+}''',
+            ["Time: O(n log n)", "Space: O(n)", "Stack simulation"],
+            "Sort by position, use stack to track fleet formation."
+        )
+        
+        # Stack Problem 6: Largest Rectangle
+        self.add_topic(
+            "A.8.6 Largest Rectangle in Histogram ⭐⭐⭐",
+            "Find area of largest rectangle in histogram.",
+            '''func largestRectangleArea(_ heights: [Int]) -> Int {
+    var stack: [Int] = []
+    var maxArea = 0
+    var heights = heights + [0] // append 0 to process remaining bars
+    
+    for i in 0..<heights.count {
+        while !stack.isEmpty && heights[i] < heights[stack.last!] {
+            let height = heights[stack.removeLast()]
+            let width = stack.isEmpty ? i : i - stack.last! - 1
+            maxArea = max(maxArea, height * width)
+        }
+        stack.append(i)
+    }
+    
+    return maxArea
+}''',
+            ["Time: O(n)", "Space: O(n)", "Monotonic increasing stack"],
+            "Use stack to track indices, calculate areas when heights decrease."
+        )
         
         # Binary Search Problems (8 problems)
         self.add_chapter_title("A.9 Binary Search Problems (8 Problems)")
         
-        binary_search_problems = [
-            ("A.9.1 Binary Search ⭐", "Classic binary search template"),
-            ("A.9.2 Search Insert Position ⭐", "Find insertion index"),
-            ("A.9.3 Search in Rotated Sorted Array ⭐⭐", "Modified binary search"),
-            ("A.9.4 Find Minimum in Rotated Array ⭐⭐", "Binary search variation"),
-            ("A.9.5 Time Based Key-Value Store ⭐⭐", "Binary search on timestamps"),
-            ("A.9.6 Search 2D Matrix ⭐⭐", "Treat as 1D sorted array"),
-            ("A.9.7 Koko Eating Bananas ⭐⭐", "Binary search on answer"),
-            ("A.9.8 Median of Two Sorted Arrays ⭐⭐⭐", "Binary search partition")
-        ]
+        # Binary Search Problem 1: Binary Search
+        self.add_topic(
+            "A.9.1 Binary Search ⭐",
+            "Search for target in sorted array.",
+            '''func search(_ nums: [Int], _ target: Int) -> Int {
+    var left = 0
+    var right = nums.count - 1
+    
+    while left <= right {
+        let mid = left + (right - left) / 2
         
-        for title, description in binary_search_problems:
-            self.add_topic(title, description, 
-                          "// Swift binary search solution", 
-                          ["Time/Space complexity"], 
-                          "Binary search technique explanation")
+        if nums[mid] == target {
+            return mid
+        } else if nums[mid] < target {
+            left = mid + 1
+        } else {
+            right = mid - 1
+        }
+    }
+    
+    return -1
+}''',
+            ["Time: O(log n)", "Space: O(1)", "Binary search"],
+            "Classic binary search with left/right pointers."
+        )
+        
+        # Binary Search Problem 2: Search Insert Position
+        self.add_topic(
+            "A.9.2 Search Insert Position ⭐",
+            "Find position where target should be inserted.",
+            '''func searchInsert(_ nums: [Int], _ target: Int) -> Int {
+    var left = 0
+    var right = nums.count - 1
+    
+    while left <= right {
+        let mid = left + (right - left) / 2
+        
+        if nums[mid] == target {
+            return mid
+        } else if nums[mid] < target {
+            left = mid + 1
+        } else {
+            right = mid - 1
+        }
+    }
+    
+    return left
+}''',
+            ["Time: O(log n)", "Space: O(1)", "Binary search variant"],
+            "Same as binary search, return left pointer when not found."
+        )
+        
+        # Binary Search Problem 3: Search in Rotated Array (already implemented in Arrays)
+        self.add_topic(
+            "A.9.3 Search in Rotated Sorted Array ⭐⭐",
+            "Search in rotated sorted array.",
+            '''func search(_ nums: [Int], _ target: Int) -> Int {
+    var left = 0
+    var right = nums.count - 1
+    
+    while left <= right {
+        let mid = left + (right - left) / 2
+        
+        if nums[mid] == target { return mid }
+        
+        if nums[left] <= nums[mid] {
+            if nums[left] <= target && target < nums[mid] {
+                right = mid - 1
+            } else {
+                left = mid + 1
+            }
+        } else {
+            if nums[mid] < target && target <= nums[right] {
+                left = mid + 1
+            } else {
+                right = mid - 1
+            }
+        }
+    }
+    
+    return -1
+}''',
+            ["Time: O(log n)", "Space: O(1)", "Modified binary search"],
+            "Determine which half is sorted, then search appropriately."
+        )
+        
+        # Binary Search Problem 4: Find Min in Rotated Array (already implemented in Arrays)
+        self.add_topic(
+            "A.9.4 Find Minimum in Rotated Array ⭐⭐",
+            "Find minimum element in rotated sorted array.",
+            '''func findMin(_ nums: [Int]) -> Int {
+    var left = 0
+    var right = nums.count - 1
+    
+    while left < right {
+        let mid = left + (right - left) / 2
+        
+        if nums[mid] > nums[right] {
+            left = mid + 1
+        } else {
+            right = mid
+        }
+    }
+    
+    return nums[left]
+}''',
+            ["Time: O(log n)", "Space: O(1)", "Binary search on rotation point"],
+            "Find the pivot point where array was rotated."
+        )
+        
+        # Binary Search Problem 5-8: Continue with remaining problems
+        self.add_topic(
+            "A.9.5 Time Based Key-Value Store ⭐⭐",
+            "Get value at specific timestamp using binary search.",
+            '''class TimeMap {
+    private var store: [String: [(String, Int)]] = [:]
+    
+    init() {}
+    
+    func set(_ key: String, _ value: String, _ timestamp: Int) {
+        store[key, default: []].append((value, timestamp))
+    }
+    
+    func get(_ key: String, _ timestamp: Int) -> String {
+        guard let values = store[key] else { return "" }
+        
+        var left = 0, right = values.count - 1
+        var result = ""
+        
+        while left <= right {
+            let mid = left + (right - left) / 2
+            
+            if values[mid].1 <= timestamp {
+                result = values[mid].0
+                left = mid + 1
+            } else {
+                right = mid - 1
+            }
+        }
+        
+        return result
+    }
+}''',
+            ["Time: O(log n) get, O(1) set", "Space: O(n)", "Binary search on timestamps"],
+            "Store values with timestamps, binary search for closest past timestamp."
+        )
+        
+        self.add_topic(
+            "A.9.6 Search 2D Matrix ⭐⭐",
+            "Search target in row and column sorted matrix.",
+            '''func searchMatrix(_ matrix: [[Int]], _ target: Int) -> Bool {
+    let m = matrix.count
+    let n = matrix[0].count
+    var left = 0
+    var right = m * n - 1
+    
+    while left <= right {
+        let mid = left + (right - left) / 2
+        let midValue = matrix[mid / n][mid % n]
+        
+        if midValue == target {
+            return true
+        } else if midValue < target {
+            left = mid + 1
+        } else {
+            right = mid - 1
+        }
+    }
+    
+    return false
+}''',
+            ["Time: O(log(m*n))", "Space: O(1)", "Treat 2D as 1D array"],
+            "Map 2D coordinates to 1D index for binary search."
+        )
+        
+        self.add_topic(
+            "A.9.7 Koko Eating Bananas ⭐⭐",
+            "Find minimum eating speed to finish bananas in time.",
+            '''func minEatingSpeed(_ piles: [Int], _ h: Int) -> Int {
+    var left = 1
+    var right = piles.max()!
+    
+    func canFinish(_ speed: Int) -> Bool {
+        var hours = 0
+        for pile in piles {
+            hours += (pile + speed - 1) / speed // ceiling division
+        }
+        return hours <= h
+    }
+    
+    while left < right {
+        let mid = left + (right - left) / 2
+        
+        if canFinish(mid) {
+            right = mid
+        } else {
+            left = mid + 1
+        }
+    }
+    
+    return left
+}''',
+            ["Time: O(n * log(max))", "Space: O(1)", "Binary search on answer"],
+            "Binary search on eating speed, check if feasible."
+        )
+        
+        self.add_topic(
+            "A.9.8 Median of Two Sorted Arrays ⭐⭐⭐",
+            "Find median of two sorted arrays in log time.",
+            '''func findMedianSortedArrays(_ nums1: [Int], _ nums2: [Int]) -> Double {
+    let (a, b) = nums1.count <= nums2.count ? (nums1, nums2) : (nums2, nums1)
+    let m = a.count, n = b.count
+    let half = (m + n + 1) / 2
+    
+    var left = 0, right = m
+    
+    while left <= right {
+        let i = (left + right) / 2
+        let j = half - i
+        
+        let maxLeftA = i == 0 ? Int.min : a[i - 1]
+        let minRightA = i == m ? Int.max : a[i]
+        let maxLeftB = j == 0 ? Int.min : b[j - 1]
+        let minRightB = j == n ? Int.max : b[j]
+        
+        if maxLeftA <= minRightB && maxLeftB <= minRightA {
+            if (m + n) % 2 == 0 {
+                return Double(max(maxLeftA, maxLeftB) + min(minRightA, minRightB)) / 2.0
+            } else {
+                return Double(max(maxLeftA, maxLeftB))
+            }
+        } else if maxLeftA > minRightB {
+            right = i - 1
+        } else {
+            left = i + 1
+        }
+    }
+    
+    return 0.0
+}''',
+            ["Time: O(log(min(m,n)))", "Space: O(1)", "Binary search partition"],
+            "Binary search on partition point to find median."
+        )
         
         # Summary
         summary_text = '''
